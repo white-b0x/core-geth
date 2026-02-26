@@ -68,7 +68,7 @@ func (result *ExecutionResult) Revert() []byte {
 }
 
 // IntrinsicGas computes the 'intrinsic gas' for a message with the given data.
-func IntrinsicGas(data []byte, accessList types.AccessList, isContractCreation bool, isEIP2, isEIP2028 bool, isEIP3860 bool) (uint64, error) {
+func IntrinsicGas(data []byte, accessList types.AccessList, authList int, isContractCreation bool, isEIP2, isEIP2028 bool, isEIP3860 bool) (uint64, error) {
 	// Set the starting gas for the raw transaction
 	var gas uint64
 	if isContractCreation && isEIP2 {
@@ -114,6 +114,13 @@ func IntrinsicGas(data []byte, accessList types.AccessList, isContractCreation b
 		gas += uint64(len(accessList)) * vars.TxAccessListAddressGas
 		gas += uint64(accessList.StorageKeys()) * vars.TxAccessListStorageKeyGas
 	}
+	// EIP-7702: Charge per authorization tuple
+	if authList > 0 {
+		if (math.MaxUint64-gas)/vars.CallNewAccountGas < uint64(authList) {
+			return 0, ErrGasUintOverflow
+		}
+		gas += uint64(authList) * vars.CallNewAccountGas
+	}
 	return gas, nil
 }
 
@@ -153,6 +160,9 @@ type Message struct {
 	BlobGasFeeCap *big.Int
 	BlobHashes    []common.Hash
 
+	// EIP-7702: SetCode authorization list
+	SetCodeAuthorizations []types.SetCodeAuthorization
+
 	// When SkipAccountChecks is true, the message nonce is not checked against the
 	// account nonce in state. It also disables checking that the sender is an EOA.
 	// This field will be set to true for operations like RPC eth_call.
@@ -162,18 +172,19 @@ type Message struct {
 // TransactionToMessage converts a transaction into a Message.
 func TransactionToMessage(tx *types.Transaction, s types.Signer, baseFee *big.Int) (*Message, error) {
 	msg := &Message{
-		Nonce:             tx.Nonce(),
-		GasLimit:          tx.Gas(),
-		GasPrice:          new(big.Int).Set(tx.GasPrice()),
-		GasFeeCap:         new(big.Int).Set(tx.GasFeeCap()),
-		GasTipCap:         new(big.Int).Set(tx.GasTipCap()),
-		To:                tx.To(),
-		Value:             tx.Value(),
-		Data:              tx.Data(),
-		AccessList:        tx.AccessList(),
-		SkipAccountChecks: false,
-		BlobHashes:        tx.BlobHashes(),
-		BlobGasFeeCap:     tx.BlobGasFeeCap(),
+		Nonce:                 tx.Nonce(),
+		GasLimit:              tx.Gas(),
+		GasPrice:              new(big.Int).Set(tx.GasPrice()),
+		GasFeeCap:             new(big.Int).Set(tx.GasFeeCap()),
+		GasTipCap:             new(big.Int).Set(tx.GasTipCap()),
+		To:                    tx.To(),
+		Value:                 tx.Value(),
+		Data:                  tx.Data(),
+		AccessList:            tx.AccessList(),
+		SkipAccountChecks:     false,
+		BlobHashes:            tx.BlobHashes(),
+		BlobGasFeeCap:         tx.BlobGasFeeCap(),
+		SetCodeAuthorizations: tx.SetCodeAuthorizations(),
 	}
 	// If baseFee provided, set gasPrice to effectiveGasPrice.
 	if baseFee != nil {
@@ -299,11 +310,19 @@ func (st *StateTransition) preCheck() error {
 			return fmt.Errorf("%w: address %v, nonce: %d", ErrNonceMax,
 				msg.From.Hex(), stNonce)
 		}
-		// Make sure the sender is an EOA
+		// Make sure the sender is an EOA (or a delegated account per EIP-7702)
 		codeHash := st.state.GetCodeHash(msg.From)
 		if codeHash != (common.Hash{}) && codeHash != types.EmptyCodeHash {
-			return fmt.Errorf("%w: address %v, codehash: %s", ErrSenderNoEOA,
-				msg.From.Hex(), codeHash)
+			// EIP-7702: Allow delegated accounts to send transactions
+			if code := st.state.GetCode(msg.From); len(code) > 0 {
+				if _, ok := types.ParseDelegation(code); !ok {
+					return fmt.Errorf("%w: address %v, codehash: %s", ErrSenderNoEOA,
+						msg.From.Hex(), codeHash)
+				}
+			} else {
+				return fmt.Errorf("%w: address %v, codehash: %s", ErrSenderNoEOA,
+					msg.From.Hex(), codeHash)
+			}
 		}
 	}
 	// Make sure that transaction gasFeeCap is greater than the baseFee (post london)
@@ -366,6 +385,15 @@ func (st *StateTransition) preCheck() error {
 	// EIP-7825: Verify transaction gas limit does not exceed per-tx cap.
 	if st.evm.ChainConfig().IsEnabled(st.evm.ChainConfig().GetEIP7825Transition, st.evm.Context.BlockNumber) && msg.GasLimit > vars.MaxTxGas {
 		return fmt.Errorf("%w (cap: %d, tx: %d)", ErrGasLimitTooHigh, vars.MaxTxGas, msg.GasLimit)
+	}
+	// EIP-7702: Validate SetCode transaction constraints
+	if msg.SetCodeAuthorizations != nil {
+		if msg.To == nil {
+			return fmt.Errorf("%w (sender %v)", ErrSetCodeTxCreate, msg.From)
+		}
+		if len(msg.SetCodeAuthorizations) == 0 {
+			return fmt.Errorf("%w (sender %v)", ErrEmptyAuthList, msg.From)
+		}
 	}
 	return st.buyGas()
 }
@@ -439,7 +467,7 @@ func (st *StateTransition) TransitionDb() (*ExecutionResult, error) {
 	)
 
 	// Check clauses 4-5, subtract intrinsic gas if everything is correct
-	gas, err := IntrinsicGas(msg.Data, msg.AccessList, contractCreation, eip2f, eip2028f, eip3860f)
+	gas, err := IntrinsicGas(msg.Data, msg.AccessList, len(msg.SetCodeAuthorizations), contractCreation, eip2f, eip2028f, eip3860f)
 	if err != nil {
 		return nil, err
 	}
@@ -479,6 +507,13 @@ func (st *StateTransition) TransitionDb() (*ExecutionResult, error) {
 	// - prepare accessList(post-berlin)
 	// - reset transient storage(eip 1153)
 	st.state.Prepare(eip2930f, eip3651f, msg.From, st.evm.Context.Coinbase, msg.To, st.evm.ActivePrecompiles(), msg.AccessList)
+
+	// EIP-7702: Apply SetCode authorizations before execution
+	if msg.SetCodeAuthorizations != nil {
+		for i := range msg.SetCodeAuthorizations {
+			st.applyAuthorization(&msg.SetCodeAuthorizations[i])
+		}
+	}
 
 	var (
 		ret   []byte
@@ -557,4 +592,60 @@ func (st *StateTransition) gasUsed() uint64 {
 // blobGasUsed returns the amount of blob gas used by the message.
 func (st *StateTransition) blobGasUsed() uint64 {
 	return uint64(len(st.msg.BlobHashes) * vars.BlobTxBlobGasPerBlob)
+}
+
+// applyAuthorization applies an EIP-7702 SetCode authorization.
+// Invalid authorizations are silently skipped (per spec).
+func (st *StateTransition) applyAuthorization(auth *types.SetCodeAuthorization) {
+	// Verify chain ID: must be 0 (wildcard) or match current chain
+	authChainID := auth.ChainID.ToBig()
+	if authChainID.Sign() != 0 {
+		if st.evm.ChainConfig().GetChainID().Cmp(authChainID) != 0 {
+			return
+		}
+	}
+
+	// Check for nonce overflow
+	if auth.Nonce+1 < auth.Nonce {
+		return
+	}
+
+	// Recover authority address from signature
+	authority, err := auth.Authority()
+	if err != nil {
+		return
+	}
+
+	// Add authority to access list (warm)
+	st.state.AddAddressToAccessList(authority)
+
+	// Check that authority does not have code, unless it's a delegation
+	code := st.state.GetCode(authority)
+	if len(code) > 0 {
+		if _, ok := types.ParseDelegation(code); !ok {
+			return
+		}
+	}
+
+	// Verify nonce matches
+	if st.state.GetNonce(authority) != auth.Nonce {
+		return
+	}
+
+	// If the account already exists (has balance, nonce, or code), apply a refund
+	// per EIP-7702: the upfront cost is CallNewAccountGas (25000), but for existing
+	// accounts we refund CallNewAccountGas - TxAuthTupleGas (12500).
+	if st.state.Exist(authority) {
+		st.state.AddRefund(vars.CallNewAccountGas - vars.TxAuthTupleGas)
+	}
+
+	// Increment the authority's nonce
+	st.state.SetNonce(authority, auth.Nonce+1)
+
+	// Set delegation code: if target is zero address, clear the code
+	if auth.Address == (common.Address{}) {
+		st.state.SetCode(authority, nil)
+	} else {
+		st.state.SetCode(authority, types.AddressToDelegation(auth.Address))
+	}
 }

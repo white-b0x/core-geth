@@ -238,6 +238,11 @@ func instructionSetForConfig(config ctypes.ChainConfigurator, isPostMerge bool, 
 		enable6780(instructionSet) // EIP-6780 SELFDESTRUCT only in same transaction
 	}
 
+	// Prague
+	if config.IsEnabled(config.GetEIP7702Transition, bn) {
+		enable7702(instructionSet) // EIP-7702 delegation-aware gas for CALL variants
+	}
+
 	return validate(instructionSet)
 }
 

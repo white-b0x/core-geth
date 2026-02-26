@@ -40,6 +40,8 @@ type sigCache struct {
 func MakeSigner(config ctypes.ChainConfigurator, blockNumber *big.Int, blockTime uint64) Signer {
 	var signer Signer
 	switch {
+	case config.IsEnabled(config.GetEIP7702Transition, blockNumber):
+		signer = NewSetCodeSigner(config.GetChainID())
 	case config.IsEnabledByTime(config.GetEIP4844TransitionTime, &blockTime), config.IsEnabled(config.GetEIP4844Transition, blockNumber):
 		signer = NewCancunSigner(config.GetChainID())
 	case config.IsEnabled(config.GetEIP1559Transition, blockNumber):
@@ -65,6 +67,9 @@ func MakeSigner(config ctypes.ChainConfigurator, blockNumber *big.Int, blockTime
 // have the current block number available, use MakeSigner instead.
 func LatestSigner(config ctypes.ChainConfigurator) Signer {
 	if chainID := config.GetChainID(); chainID != nil {
+		if config.GetEIP7702Transition() != nil {
+			return NewSetCodeSigner(chainID)
+		}
 		if config.GetEIP4844TransitionTime() != nil || config.GetEIP4844Transition() != nil {
 			return NewCancunSigner(chainID)
 		}
@@ -242,6 +247,64 @@ func (s eip4844Signer) Hash(tx *Transaction) common.Hash {
 			tx.AccessList(),
 			tx.BlobGasFeeCap(),
 			tx.BlobHashes(),
+		})
+}
+
+// setCodeSigner accepts EIP-7702 SetCode transactions in addition to all
+// EIP-4844 and earlier transaction types.
+type setCodeSigner struct{ eip4844Signer }
+
+func NewSetCodeSigner(chainId *big.Int) Signer {
+	return setCodeSigner{eip4844Signer{eip1559Signer{eip2930Signer{NewEIP155Signer(chainId)}}}}
+}
+
+func (s setCodeSigner) Sender(tx *Transaction) (common.Address, error) {
+	if tx.Type() != SetCodeTxType {
+		return s.eip4844Signer.Sender(tx)
+	}
+	V, R, S := tx.RawSignatureValues()
+	V = new(big.Int).Add(V, big.NewInt(27))
+	if tx.ChainId().Cmp(s.chainId) != 0 {
+		return common.Address{}, fmt.Errorf("%w: have %d want %d", ErrInvalidChainId, tx.ChainId(), s.chainId)
+	}
+	return recoverPlain(s.Hash(tx), R, S, V, true)
+}
+
+func (s setCodeSigner) Equal(s2 Signer) bool {
+	x, ok := s2.(setCodeSigner)
+	return ok && x.chainId.Cmp(s.chainId) == 0
+}
+
+func (s setCodeSigner) SignatureValues(tx *Transaction, sig []byte) (R, S, V *big.Int, err error) {
+	txdata, ok := tx.inner.(*SetCodeTx)
+	if !ok {
+		return s.eip4844Signer.SignatureValues(tx, sig)
+	}
+	if txdata.ChainID.Sign() != 0 && txdata.ChainID.ToBig().Cmp(s.chainId) != 0 {
+		return nil, nil, nil, fmt.Errorf("%w: have %d want %d", ErrInvalidChainId, txdata.ChainID, s.chainId)
+	}
+	R, S, _ = decodeSignature(sig)
+	V = big.NewInt(int64(sig[64]))
+	return R, S, V, nil
+}
+
+func (s setCodeSigner) Hash(tx *Transaction) common.Hash {
+	if tx.Type() != SetCodeTxType {
+		return s.eip4844Signer.Hash(tx)
+	}
+	return prefixedRlpHash(
+		tx.Type(),
+		[]interface{}{
+			s.chainId,
+			tx.Nonce(),
+			tx.GasTipCap(),
+			tx.GasFeeCap(),
+			tx.Gas(),
+			tx.To(),
+			tx.Value(),
+			tx.Data(),
+			tx.AccessList(),
+			tx.SetCodeAuthorizations(),
 		})
 }
 

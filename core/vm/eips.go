@@ -26,6 +26,7 @@ import (
 )
 
 var activators = map[int]func(*JumpTable){
+	7702: enable7702,
 	5656: enable5656,
 	6780: enable6780,
 	3855: enable3855,
@@ -311,6 +312,16 @@ func enable7516(jt *JumpTable) {
 		minStack:    minStack(0, 1),
 		maxStack:    maxStack(0, 1),
 	}
+}
+
+// enable7702 applies EIP-7702 (Set EOA account code)
+// Wraps CALL, CALLCODE, STATICCALL, DELEGATECALL dynamic gas functions
+// to additionally charge for cold delegation target access.
+func enable7702(jt *JumpTable) {
+	jt[CALL].dynamicGas = makeCallVariantGasCallEIP7702(jt[CALL].dynamicGas)
+	jt[CALLCODE].dynamicGas = makeCallVariantGasCallEIP7702(jt[CALLCODE].dynamicGas)
+	jt[STATICCALL].dynamicGas = makeCallVariantGasCallEIP7702(jt[STATICCALL].dynamicGas)
+	jt[DELEGATECALL].dynamicGas = makeCallVariantGasCallEIP7702(jt[DELEGATECALL].dynamicGas)
 }
 
 // enable6780 applies EIP-6780 (deactivate SELFDESTRUCT)

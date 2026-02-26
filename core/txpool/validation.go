@@ -75,6 +75,19 @@ func ValidateTransaction(tx *types.Transaction, head *types.Header, signer types
 	if !eip4844Enabled && tx.Type() == types.BlobTxType {
 		return fmt.Errorf("%w: type %d rejected, pool not yet in Cancun", core.ErrTxTypeNotSupported, tx.Type())
 	}
+	// EIP-7702: Reject SetCode transactions before activation
+	if !opts.Config.IsEnabled(opts.Config.GetEIP7702Transition, head.Number) && tx.Type() == types.SetCodeTxType {
+		return fmt.Errorf("%w: type %d rejected, pool not yet in Olympia", core.ErrTxTypeNotSupported, tx.Type())
+	}
+	// EIP-7702: Validate SetCode transaction constraints
+	if tx.Type() == types.SetCodeTxType {
+		if tx.To() == nil {
+			return fmt.Errorf("%w (sender)", core.ErrSetCodeTxCreate)
+		}
+		if len(tx.SetCodeAuthorizations()) == 0 {
+			return core.ErrEmptyAuthList
+		}
+	}
 	// Check whether the init code size has been exceeded
 	if opts.Config.IsEnabledByTime(opts.Config.GetEIP3860TransitionTime, &head.Time) && tx.To() == nil && uint64(len(tx.Data())) > vars.MaxInitCodeSize {
 		return fmt.Errorf("%w: code size %v, limit %v", core.ErrMaxInitCodeSizeExceeded, len(tx.Data()), vars.MaxInitCodeSize)
@@ -109,7 +122,7 @@ func ValidateTransaction(tx *types.Transaction, head *types.Header, signer types
 	}
 	// Ensure the transaction has more gas than the bare minimum needed to cover
 	// the transaction metadata
-	intrGas, err := core.IntrinsicGas(tx.Data(), tx.AccessList(), tx.To() == nil, true, opts.Config.IsEnabled(opts.Config.GetEIP2028Transition, head.Number), opts.Config.IsEnabledByTime(opts.Config.GetEIP3860TransitionTime, &head.Time))
+	intrGas, err := core.IntrinsicGas(tx.Data(), tx.AccessList(), len(tx.SetCodeAuthorizations()), tx.To() == nil, true, opts.Config.IsEnabled(opts.Config.GetEIP2028Transition, head.Number), opts.Config.IsEnabledByTime(opts.Config.GetEIP3860TransitionTime, &head.Time))
 	if err != nil {
 		return err
 	}

@@ -49,6 +49,7 @@ const (
 	AccessListTxType = 0x01
 	DynamicFeeTxType = 0x02
 	BlobTxType       = 0x03
+	SetCodeTxType    = 0x04
 )
 
 // Transaction is an Ethereum transaction.
@@ -206,6 +207,8 @@ func (tx *Transaction) decodeTyped(b []byte) (TxData, error) {
 		inner = new(DynamicFeeTx)
 	case BlobTxType:
 		inner = new(BlobTx)
+	case SetCodeTxType:
+		inner = new(SetCodeTx)
 	default:
 		return nil, ErrTxTypeNotSupported
 	}
@@ -404,6 +407,14 @@ func (tx *Transaction) BlobGasFeeCap() *big.Int {
 func (tx *Transaction) BlobHashes() []common.Hash {
 	if blobtx, ok := tx.inner.(*BlobTx); ok {
 		return blobtx.BlobHashes
+	}
+	return nil
+}
+
+// SetCodeAuthorizations returns the authorization list of a SetCode transaction, nil otherwise.
+func (tx *Transaction) SetCodeAuthorizations() []SetCodeAuthorization {
+	if setcodetx, ok := tx.inner.(*SetCodeTx); ok {
+		return setcodetx.AuthList
 	}
 	return nil
 }

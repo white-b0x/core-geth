@@ -116,4 +116,27 @@ var (
 
 	// ErrBlobTxCreate is returned if a blob transaction has no explicit to field.
 	ErrBlobTxCreate = errors.New("blob transaction of type create")
+
+	// EIP-7702 errors
+
+	// ErrEmptyAuthList is returned if a SetCode transaction has an empty authorization list.
+	ErrEmptyAuthList = errors.New("EIP-7702 transaction with empty auth list")
+
+	// ErrSetCodeTxCreate is returned if a SetCode transaction has no explicit to field.
+	ErrSetCodeTxCreate = errors.New("EIP-7702 transaction cannot be used to create contract")
+
+	// ErrAuthorizationWrongChainID is returned if an authorization has the wrong chain ID.
+	ErrAuthorizationWrongChainID = errors.New("EIP-7702 authorization chain ID mismatch")
+
+	// ErrAuthorizationNonceOverflow is returned if an authorization nonce would overflow.
+	ErrAuthorizationNonceOverflow = errors.New("EIP-7702 authorization nonce > 64 bit")
+
+	// ErrAuthorizationInvalidSignature is returned if an authorization has an invalid signature.
+	ErrAuthorizationInvalidSignature = errors.New("EIP-7702 authorization has invalid signature")
+
+	// ErrAuthorizationDestinationHasCode is returned if a non-delegated account already has code.
+	ErrAuthorizationDestinationHasCode = errors.New("EIP-7702 authorization destination is a contract")
+
+	// ErrAuthorizationNonceMismatch is returned if an authorization nonce doesn't match.
+	ErrAuthorizationNonceMismatch = errors.New("EIP-7702 authorization nonce does not match current account nonce")
 )

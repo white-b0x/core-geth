@@ -140,7 +140,7 @@ func TestFloorDataGasVsIntrinsicGas(t *testing.T) {
 	//   Floor     = 1000*4*10 + 21000 = 61000  (floor > intrinsic)
 	data := bytes.Repeat([]byte{0xff}, 1000)
 
-	intrinsic, err := IntrinsicGas(data, nil, false, true, true, false)
+	intrinsic, err := IntrinsicGas(data, nil, 0, false, true, true, false)
 	if err != nil {
 		t.Fatal(err)
 	}

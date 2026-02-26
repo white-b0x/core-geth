@@ -21,6 +21,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params/vars"
 )
 
@@ -193,6 +194,25 @@ func makeCallVariantGasCallEIP2929(oldCalculator gasFunc) gasFunc {
 			return 0, ErrGasUintOverflow
 		}
 		return gas, nil
+	}
+}
+
+// makeCallVariantGasCallEIP7702 wraps a call gas function to additionally
+// charge for cold delegation target access per EIP-7702.
+func makeCallVariantGasCallEIP7702(oldCalculator gasFunc) gasFunc {
+	return func(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, error) {
+		addr := common.Address(stack.Back(1).Bytes20())
+		// If the target is a delegated account, warm the delegation target
+		code := evm.StateDB.GetCode(addr)
+		if target, ok := types.ParseDelegation(code); ok {
+			if !evm.StateDB.AddressInAccessList(target) {
+				evm.StateDB.AddAddressToAccessList(target)
+				if !contract.UseGas(vars.ColdAccountAccessCostEIP2929) {
+					return 0, ErrOutOfGas
+				}
+			}
+		}
+		return oldCalculator(evm, contract, stack, mem, memorySize)
 	}
 }
 
