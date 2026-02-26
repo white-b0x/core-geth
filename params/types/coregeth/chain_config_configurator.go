@@ -436,6 +436,15 @@ func (c *CoreGethChainConfig) SetECBP1100DeactivateTransition(n *uint64) error {
 	return nil
 }
 
+func (c *CoreGethChainConfig) GetOlympiaTreasuryAddress() *common.Address {
+	return c.OlympiaTreasuryAddress
+}
+
+func (c *CoreGethChainConfig) SetOlympiaTreasuryAddress(addr *common.Address) error {
+	c.OlympiaTreasuryAddress = addr
+	return nil
+}
+
 func (c *CoreGethChainConfig) GetEIP2315Transition() *uint64 {
 	return bigNewU64(c.EIP2315FBlock)
 }

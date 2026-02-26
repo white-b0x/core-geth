@@ -281,6 +281,9 @@ type CoreGethChainConfig struct {
 	RequireBlockHashes map[uint64]common.Hash `json:"requireBlockHashes"`
 
 	Lyra2NonceTransitionBlock *big.Int `json:"lyra2NonceTransitionBlock,omitempty"`
+
+	// ECIP-1111: Olympia Treasury address for basefee redirect
+	OlympiaTreasuryAddress *common.Address `json:"olympiaTreasuryAddress,omitempty"`
 }
 
 // String implements the fmt.Stringer interface.

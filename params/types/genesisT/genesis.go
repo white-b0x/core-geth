@@ -904,6 +904,14 @@ func (g *Genesis) SetECBP1100DeactivateTransition(n *uint64) error {
 	return g.Config.SetECBP1100DeactivateTransition(n)
 }
 
+func (g *Genesis) GetOlympiaTreasuryAddress() *common.Address {
+	return g.Config.GetOlympiaTreasuryAddress()
+}
+
+func (g *Genesis) SetOlympiaTreasuryAddress(addr *common.Address) error {
+	return g.Config.SetOlympiaTreasuryAddress(addr)
+}
+
 func (g *Genesis) IsEnabled(fn func() *uint64, n *big.Int) bool {
 	return g.Config.IsEnabled(fn, n)
 }

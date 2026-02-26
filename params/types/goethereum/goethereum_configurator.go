@@ -461,6 +461,14 @@ func (c *ChainConfig) SetECBP1100DeactivateTransition(n *uint64) error {
 	return nil
 }
 
+func (c *ChainConfig) GetOlympiaTreasuryAddress() *common.Address {
+	return nil
+}
+
+func (c *ChainConfig) SetOlympiaTreasuryAddress(addr *common.Address) error {
+	return nil
+}
+
 // GetEIP2315Transition implements EIP2537.
 // This logic is written but not configured for any Ethereum-supported networks, yet.
 func (c *ChainConfig) GetEIP2315Transition() *uint64 {
