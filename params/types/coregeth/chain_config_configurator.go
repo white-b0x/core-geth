@@ -445,6 +445,42 @@ func (c *CoreGethChainConfig) SetOlympiaTreasuryAddress(addr *common.Address) er
 	return nil
 }
 
+func (c *CoreGethChainConfig) GetEIP7823Transition() *uint64 {
+	return bigNewU64(c.EIP7823FBlock)
+}
+
+func (c *CoreGethChainConfig) SetEIP7823Transition(n *uint64) error {
+	c.EIP7823FBlock = setBig(c.EIP7823FBlock, n)
+	return nil
+}
+
+func (c *CoreGethChainConfig) GetEIP7883Transition() *uint64 {
+	return bigNewU64(c.EIP7883FBlock)
+}
+
+func (c *CoreGethChainConfig) SetEIP7883Transition(n *uint64) error {
+	c.EIP7883FBlock = setBig(c.EIP7883FBlock, n)
+	return nil
+}
+
+func (c *CoreGethChainConfig) GetEIP7825Transition() *uint64 {
+	return bigNewU64(c.EIP7825FBlock)
+}
+
+func (c *CoreGethChainConfig) SetEIP7825Transition(n *uint64) error {
+	c.EIP7825FBlock = setBig(c.EIP7825FBlock, n)
+	return nil
+}
+
+func (c *CoreGethChainConfig) GetEIP7623Transition() *uint64 {
+	return bigNewU64(c.EIP7623FBlock)
+}
+
+func (c *CoreGethChainConfig) SetEIP7623Transition(n *uint64) error {
+	c.EIP7623FBlock = setBig(c.EIP7623FBlock, n)
+	return nil
+}
+
 func (c *CoreGethChainConfig) GetEIP2315Transition() *uint64 {
 	return bigNewU64(c.EIP2315FBlock)
 }

@@ -282,6 +282,24 @@ type ProtocolSpecifier interface {
 	SetVerkleTransitionTime(n *uint64) error
 	GetVerkleTransition() *uint64
 	SetVerkleTransition(n *uint64) error
+
+	// Olympia (ECIP-1121):
+
+	// GetEIP7823Transition implements EIP-7823: Set upper bounds for MODEXP - https://eips.ethereum.org/EIPS/eip-7823
+	GetEIP7823Transition() *uint64
+	SetEIP7823Transition(n *uint64) error
+
+	// GetEIP7883Transition implements EIP-7883: ModExp gas cost increase - https://eips.ethereum.org/EIPS/eip-7883
+	GetEIP7883Transition() *uint64
+	SetEIP7883Transition(n *uint64) error
+
+	// GetEIP7623Transition implements EIP-7623: Increase calldata cost - https://eips.ethereum.org/EIPS/eip-7623
+	GetEIP7623Transition() *uint64
+	SetEIP7623Transition(n *uint64) error
+
+	// GetEIP7825Transition implements EIP-7825: Transaction gas limit cap - https://eips.ethereum.org/EIPS/eip-7825
+	GetEIP7825Transition() *uint64
+	SetEIP7825Transition(n *uint64) error
 }
 
 type Forker interface {

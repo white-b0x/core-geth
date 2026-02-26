@@ -77,7 +77,11 @@ func PrecompiledContractsForConfig(config ctypes.ChainConfigurator, bn *big.Int,
 	mergeContracts(precompileds, basePrecompiledContracts)
 
 	if config.IsEnabled(config.GetEIP198Transition, bn) {
-		precompileds[common.BytesToAddress([]byte{5})] = &bigModExp{eip2565: config.IsEnabled(config.GetEIP2565Transition, bn)}
+		precompileds[common.BytesToAddress([]byte{5})] = &bigModExp{
+			eip2565: config.IsEnabled(config.GetEIP2565Transition, bn),
+			eip7823: config.IsEnabled(config.GetEIP7823Transition, bn),
+			eip7883: config.IsEnabled(config.GetEIP7883Transition, bn),
+		}
 	}
 	if config.IsEnabled(config.GetEIP213Transition, bn) {
 		if config.IsEnabled(config.GetEIP1108Transition, bn) {
@@ -210,6 +214,8 @@ func (c *dataCopy) Run(in []byte) ([]byte, error) {
 // bigModExp implements a native big integer exponential modular operation.
 type bigModExp struct {
 	eip2565 bool
+	eip7823 bool // EIP-7823: Set upper bounds for MODEXP (max 1024 bytes per operand)
+	eip7883 bool // EIP-7883: ModExp gas cost increase
 }
 
 var (
@@ -302,9 +308,21 @@ func (c *bigModExp) RequiredGas(input []byte) uint64 {
 		//    ceiling(x/8)^2
 		//
 		// where is x is max(length_of_MODULUS, length_of_BASE)
+		maxLenOver32 := gas.Cmp(big32) > 0 // capture before gas is modified
 		gas = gas.Add(gas, big7)
 		gas = gas.Div(gas, big8)
 		gas.Mul(gas, gas)
+
+		// EIP-7883: Increase ModExp gas cost
+		var minPrice uint64 = 200
+		if c.eip7883 {
+			minPrice = 500
+			if maxLenOver32 {
+				gas.Add(gas, gas) // Double gas for large inputs
+			} else {
+				gas = big.NewInt(16) // Small inputs get flat cost
+			}
+		}
 
 		gas.Mul(gas, math.BigMax(adjExpLen, big1))
 		// 2. Different divisor (`GQUADDIVISOR`) (3)
@@ -312,9 +330,9 @@ func (c *bigModExp) RequiredGas(input []byte) uint64 {
 		if gas.BitLen() > 64 {
 			return math.MaxUint64
 		}
-		// 3. Minimum price of 200 gas
-		if gas.Uint64() < 200 {
-			return 200
+		// 3. Minimum price (200 gas, or 500 with EIP-7883)
+		if gas.Uint64() < minPrice {
+			return minPrice
 		}
 		return gas.Uint64()
 	}
@@ -342,6 +360,10 @@ func (c *bigModExp) Run(input []byte) ([]byte, error) {
 	// Handle a special case when both the base and mod length is zero
 	if baseLen == 0 && modLen == 0 {
 		return []byte{}, nil
+	}
+	// EIP-7823: Enforce upper bounds for MODEXP operand sizes
+	if c.eip7823 && max(baseLen, expLen, modLen) > 1024 {
+		return nil, fmt.Errorf("one or more of base/exponent/modulus length exceeded 1024 bytes")
 	}
 	// Retrieve the operands and execute the exponentiation
 	var (

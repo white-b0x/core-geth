@@ -284,6 +284,12 @@ type CoreGethChainConfig struct {
 
 	// ECIP-1111: Olympia Treasury address for basefee redirect
 	OlympiaTreasuryAddress *common.Address `json:"olympiaTreasuryAddress,omitempty"`
+
+	// ECIP-1121 Olympia EIPs:
+	EIP7823FBlock *big.Int `json:"eip7823FBlock,omitempty"` // EIP-7823: Set upper bounds for MODEXP
+	EIP7883FBlock *big.Int `json:"eip7883FBlock,omitempty"` // EIP-7883: ModExp gas cost increase
+	EIP7825FBlock *big.Int `json:"eip7825FBlock,omitempty"` // EIP-7825: Transaction gas limit cap
+	EIP7623FBlock *big.Int `json:"eip7623FBlock,omitempty"` // EIP-7623: Increase calldata cost
 }
 
 // String implements the fmt.Stringer interface.

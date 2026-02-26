@@ -469,6 +469,38 @@ func (c *ChainConfig) SetOlympiaTreasuryAddress(addr *common.Address) error {
 	return nil
 }
 
+func (c *ChainConfig) GetEIP7823Transition() *uint64 { return nil }
+func (c *ChainConfig) SetEIP7823Transition(n *uint64) error {
+	if n != nil {
+		return ctypes.ErrUnsupportedConfigFatal
+	}
+	return nil
+}
+
+func (c *ChainConfig) GetEIP7883Transition() *uint64 { return nil }
+func (c *ChainConfig) SetEIP7883Transition(n *uint64) error {
+	if n != nil {
+		return ctypes.ErrUnsupportedConfigFatal
+	}
+	return nil
+}
+
+func (c *ChainConfig) GetEIP7825Transition() *uint64 { return nil }
+func (c *ChainConfig) SetEIP7825Transition(n *uint64) error {
+	if n != nil {
+		return ctypes.ErrUnsupportedConfigFatal
+	}
+	return nil
+}
+
+func (c *ChainConfig) GetEIP7623Transition() *uint64 { return nil }
+func (c *ChainConfig) SetEIP7623Transition(n *uint64) error {
+	if n != nil {
+		return ctypes.ErrUnsupportedConfigFatal
+	}
+	return nil
+}
+
 // GetEIP2315Transition implements EIP2537.
 // This logic is written but not configured for any Ethereum-supported networks, yet.
 func (c *ChainConfig) GetEIP2315Transition() *uint64 {

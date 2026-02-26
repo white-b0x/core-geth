@@ -912,6 +912,26 @@ func (g *Genesis) SetOlympiaTreasuryAddress(addr *common.Address) error {
 	return g.Config.SetOlympiaTreasuryAddress(addr)
 }
 
+func (g *Genesis) GetEIP7823Transition() *uint64 { return g.Config.GetEIP7823Transition() }
+func (g *Genesis) SetEIP7823Transition(n *uint64) error {
+	return g.Config.SetEIP7823Transition(n)
+}
+
+func (g *Genesis) GetEIP7883Transition() *uint64 { return g.Config.GetEIP7883Transition() }
+func (g *Genesis) SetEIP7883Transition(n *uint64) error {
+	return g.Config.SetEIP7883Transition(n)
+}
+
+func (g *Genesis) GetEIP7825Transition() *uint64 { return g.Config.GetEIP7825Transition() }
+func (g *Genesis) SetEIP7825Transition(n *uint64) error {
+	return g.Config.SetEIP7825Transition(n)
+}
+
+func (g *Genesis) GetEIP7623Transition() *uint64 { return g.Config.GetEIP7623Transition() }
+func (g *Genesis) SetEIP7623Transition(n *uint64) error {
+	return g.Config.SetEIP7623Transition(n)
+}
+
 func (g *Genesis) IsEnabled(fn func() *uint64, n *big.Int) bool {
 	return g.Config.IsEnabled(fn, n)
 }

@@ -98,6 +98,12 @@ var (
 		EIP6780FBlock: big.NewInt(99_999_999), // SELFDESTRUCT only in same tx
 		EIP2537FBlock: big.NewInt(99_999_999), // BLS12-381 precompiles
 
+		// Olympia (ECIP-1121: Gas/limits EIPs)
+		EIP7823FBlock: big.NewInt(99_999_999), // MODEXP upper bounds (1024 bytes)
+		EIP7883FBlock: big.NewInt(99_999_999), // MODEXP gas cost increase
+		EIP7825FBlock: big.NewInt(99_999_999), // TX gas limit cap (30M)
+		EIP7623FBlock: big.NewInt(99_999_999), // Floor data gas cost
+
 		DisposalBlock:            big.NewInt(0),
 		ECIP1017FBlock:           big.NewInt(0),
 		ECIP1017EraRounds:        big.NewInt(2000000),
