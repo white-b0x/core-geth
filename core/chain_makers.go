@@ -344,6 +344,16 @@ func GenerateChain(config ctypes.ChainConfigurator, parent *types.Block, engine 
 		if generic.AsGenericCC(config).DAOSupport() && config.GetEthashEIP779Transition() != nil && *config.GetEthashEIP779Transition() == b.header.Number.Uint64() {
 			mutations.ApplyDAOHardFork(statedb)
 		}
+		// EIP-2935: Deploy history storage contract at activation and store parent hash.
+		if config.IsEnabled(config.GetEIP2935Transition, b.header.Number) {
+			if forkBlock := config.GetEIP2935Transition(); forkBlock != nil && *forkBlock == b.header.Number.Uint64() {
+				statedb.SetNonce(vars.HistoryStorageAddress, 1)
+				statedb.SetCode(vars.HistoryStorageAddress, vars.HistoryStorageCode)
+			}
+			blockContext := NewEVMBlockContext(b.header, cm, &b.header.Coinbase)
+			vmenv := vm.NewEVM(blockContext, vm.TxContext{}, statedb, cm.config, vm.Config{})
+			ProcessParentBlockHash(b.header.ParentHash, vmenv, statedb)
+		}
 		// Execute any user modifications to the block
 		if gen != nil {
 			gen(i, b)

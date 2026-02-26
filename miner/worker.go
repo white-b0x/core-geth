@@ -1196,6 +1196,16 @@ func (w *worker) prepareWork(genParams *generateParams) (*environment, error) {
 		vmenv := vm.NewEVM(context, vm.TxContext{}, env.state, w.chainConfig, vm.Config{})
 		core.ProcessBeaconBlockRoot(*header.ParentBeaconRoot, vmenv, env.state)
 	}
+	// EIP-2935: Deploy history storage contract at activation block and store parent hash.
+	if w.chainConfig.IsEnabled(w.chainConfig.GetEIP2935Transition, header.Number) {
+		if forkBlock := w.chainConfig.GetEIP2935Transition(); forkBlock != nil && *forkBlock == header.Number.Uint64() {
+			env.state.SetNonce(vars.HistoryStorageAddress, 1)
+			env.state.SetCode(vars.HistoryStorageAddress, vars.HistoryStorageCode)
+		}
+		context := core.NewEVMBlockContext(header, w.chain, nil)
+		vmenv := vm.NewEVM(context, vm.TxContext{}, env.state, w.chainConfig, vm.Config{})
+		core.ProcessParentBlockHash(header.ParentHash, vmenv, env.state)
+	}
 	return env, nil
 }
 
