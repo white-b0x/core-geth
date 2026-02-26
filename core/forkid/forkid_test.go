@@ -195,8 +195,11 @@ func TestCreation(t *testing.T) {
 				{5_520_000, 0, ID{Hash: checksumToBytes(0x8c9b1797), Next: 9_957_000}},
 				{5_520_001, 0, ID{Hash: checksumToBytes(0x8c9b1797), Next: 9_957_000}},
 				{9_956_999, 0, ID{Hash: checksumToBytes(0x8c9b1797), Next: 9_957_000}},
-				{9_957_000, 0, ID{Hash: checksumToBytes(0x3a6b00d7), Next: 0}},
-				{9_957_001, 0, ID{Hash: checksumToBytes(0x3a6b00d7), Next: 0}},
+				{9_957_000, 0, ID{Hash: checksumToBytes(0x3a6b00d7), Next: 15_800_850}},
+				{9_957_001, 0, ID{Hash: checksumToBytes(0x3a6b00d7), Next: 15_800_850}},
+				{15_800_849, 0, ID{Hash: checksumToBytes(0x3a6b00d7), Next: 15_800_850}},
+				{15_800_850, 0, ID{Hash: checksumToBytes(0x17ca6da6), Next: 0}},
+				{15_800_851, 0, ID{Hash: checksumToBytes(0x17ca6da6), Next: 0}},
 			},
 		},
 		// MintMe test cases
@@ -498,7 +501,7 @@ func TestGatherForks(t *testing.T) {
 		{
 			"mordor",
 			params.MordorChainConfig,
-			[]uint64{301_243, 999_983, 2_520_000, 3_985_893, 5_520_000, 9_957_000},
+			[]uint64{301_243, 999_983, 2_520_000, 3_985_893, 5_520_000, 9_957_000, 15_800_850},
 			[]uint64{},
 		},
 		{
