@@ -312,6 +312,10 @@ type ProtocolSpecifier interface {
 	// GetEIP7702Transition implements EIP-7702: Set EOA account code - https://eips.ethereum.org/EIPS/eip-7702
 	GetEIP7702Transition() *uint64
 	SetEIP7702Transition(n *uint64) error
+
+	// GetEIP7934Transition implements EIP-7934: RLP execution block size limit - https://eips.ethereum.org/EIPS/eip-7934
+	GetEIP7934Transition() *uint64
+	SetEIP7934Transition(n *uint64) error
 }
 
 type Forker interface {

@@ -139,4 +139,7 @@ var (
 
 	// ErrAuthorizationNonceMismatch is returned if an authorization nonce doesn't match.
 	ErrAuthorizationNonceMismatch = errors.New("EIP-7702 authorization nonce does not match current account nonce")
+
+	// ErrBlockOversized is returned if a block's RLP-encoded size exceeds the EIP-7934 limit.
+	ErrBlockOversized = errors.New("block RLP-encoded size exceeds maximum")
 )

@@ -110,6 +110,11 @@ func (v *BlockValidator) ValidateBody(block *types.Block) error {
 		}
 	}
 
+	// EIP-7934: Check RLP-encoded block size cap.
+	if v.config.IsEnabled(v.config.GetEIP7934Transition, block.Number()) && block.Size() > vars.BlockRLPSizeCap {
+		return fmt.Errorf("%w: size %d, cap %d", ErrBlockOversized, block.Size(), vars.BlockRLPSizeCap)
+	}
+
 	// Ancestor block must be known.
 	if !v.bc.HasBlockAndState(block.ParentHash(), block.NumberU64()-1) {
 		if !v.bc.HasBlock(block.ParentHash(), block.NumberU64()-1) {

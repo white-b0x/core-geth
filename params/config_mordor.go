@@ -108,6 +108,7 @@ var (
 		EIP7951FBlock: big.NewInt(99_999_999), // secp256r1 P256VERIFY precompile
 		EIP2935FBlock: big.NewInt(99_999_999), // Historical block hashes from state
 		EIP7702FBlock: big.NewInt(99_999_999), // Set EOA account code
+		EIP7934FBlock: big.NewInt(99_999_999), // RLP execution block size limit
 
 		DisposalBlock:            big.NewInt(0),
 		ECIP1017FBlock:           big.NewInt(0),

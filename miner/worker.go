@@ -108,6 +108,7 @@ type environment struct {
 	uncles   map[common.Hash]*types.Header
 	sidecars []*types.BlobTxSidecar
 	blobs    int
+	size     uint64 // EIP-7934: estimated RLP-encoded block size
 }
 
 // copy creates a deep copy of environment.
@@ -1020,6 +1021,16 @@ func (w *worker) commitTransactions(env *environment, plainTxs, blobTxs *transac
 			txs.Pop()
 			continue
 		}
+		// EIP-7934: Check if adding this transaction would exceed the block size cap.
+		if w.chainConfig.IsEnabled(w.chainConfig.GetEIP7934Transition, env.header.Number) {
+			const blockRLPSizeCapBuffer = 1_000_000 // 1 MB safety margin
+			if env.size+tx.Size() > vars.BlockRLPSizeCap-blockRLPSizeCapBuffer {
+				log.Trace("Not enough block size left for transaction", "hash", ltx.Hash, "blockSize", env.size, "txSize", tx.Size())
+				txs.Pop()
+				continue
+			}
+		}
+
 		// Start executing the transaction
 		env.state.SetTxContext(tx.Hash(), env.tcount)
 
@@ -1034,6 +1045,7 @@ func (w *worker) commitTransactions(env *environment, plainTxs, blobTxs *transac
 			// Everything ok, collect the logs and shift in the next transaction from the same account
 			coalescedLogs = append(coalescedLogs, logs...)
 			env.tcount++
+			env.size += tx.Size() // EIP-7934: Track block size
 			txs.Shift()
 
 		default:

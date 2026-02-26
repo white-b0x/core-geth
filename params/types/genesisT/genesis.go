@@ -947,6 +947,11 @@ func (g *Genesis) SetEIP7702Transition(n *uint64) error {
 	return g.Config.SetEIP7702Transition(n)
 }
 
+func (g *Genesis) GetEIP7934Transition() *uint64 { return g.Config.GetEIP7934Transition() }
+func (g *Genesis) SetEIP7934Transition(n *uint64) error {
+	return g.Config.SetEIP7934Transition(n)
+}
+
 func (g *Genesis) IsEnabled(fn func() *uint64, n *big.Int) bool {
 	return g.Config.IsEnabled(fn, n)
 }
