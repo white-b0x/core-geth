@@ -300,6 +300,18 @@ type ProtocolSpecifier interface {
 	// GetEIP7825Transition implements EIP-7825: Transaction gas limit cap - https://eips.ethereum.org/EIPS/eip-7825
 	GetEIP7825Transition() *uint64
 	SetEIP7825Transition(n *uint64) error
+
+	// GetEIP7951Transition implements EIP-7951: secp256r1 P256VERIFY precompile - https://eips.ethereum.org/EIPS/eip-7951
+	GetEIP7951Transition() *uint64
+	SetEIP7951Transition(n *uint64) error
+
+	// GetEIP2935Transition implements EIP-2935: Historical block hashes from state - https://eips.ethereum.org/EIPS/eip-2935
+	GetEIP2935Transition() *uint64
+	SetEIP2935Transition(n *uint64) error
+
+	// GetEIP7702Transition implements EIP-7702: Set EOA account code - https://eips.ethereum.org/EIPS/eip-7702
+	GetEIP7702Transition() *uint64
+	SetEIP7702Transition(n *uint64) error
 }
 
 type Forker interface {

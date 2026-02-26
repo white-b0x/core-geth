@@ -501,6 +501,30 @@ func (c *ChainConfig) SetEIP7623Transition(n *uint64) error {
 	return nil
 }
 
+func (c *ChainConfig) GetEIP7951Transition() *uint64 { return nil }
+func (c *ChainConfig) SetEIP7951Transition(n *uint64) error {
+	if n != nil {
+		return ctypes.ErrUnsupportedConfigFatal
+	}
+	return nil
+}
+
+func (c *ChainConfig) GetEIP2935Transition() *uint64 { return nil }
+func (c *ChainConfig) SetEIP2935Transition(n *uint64) error {
+	if n != nil {
+		return ctypes.ErrUnsupportedConfigFatal
+	}
+	return nil
+}
+
+func (c *ChainConfig) GetEIP7702Transition() *uint64 { return nil }
+func (c *ChainConfig) SetEIP7702Transition(n *uint64) error {
+	if n != nil {
+		return ctypes.ErrUnsupportedConfigFatal
+	}
+	return nil
+}
+
 // GetEIP2315Transition implements EIP2537.
 // This logic is written but not configured for any Ethereum-supported networks, yet.
 func (c *ChainConfig) GetEIP2315Transition() *uint64 {

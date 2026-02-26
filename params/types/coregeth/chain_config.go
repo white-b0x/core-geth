@@ -290,6 +290,9 @@ type CoreGethChainConfig struct {
 	EIP7883FBlock *big.Int `json:"eip7883FBlock,omitempty"` // EIP-7883: ModExp gas cost increase
 	EIP7825FBlock *big.Int `json:"eip7825FBlock,omitempty"` // EIP-7825: Transaction gas limit cap
 	EIP7623FBlock *big.Int `json:"eip7623FBlock,omitempty"` // EIP-7623: Increase calldata cost
+	EIP7951FBlock *big.Int `json:"eip7951FBlock,omitempty"` // EIP-7951: secp256r1 P256VERIFY precompile
+	EIP2935FBlock *big.Int `json:"eip2935FBlock,omitempty"` // EIP-2935: Historical block hashes from state
+	EIP7702FBlock *big.Int `json:"eip7702FBlock,omitempty"` // EIP-7702: Set EOA account code
 }
 
 // String implements the fmt.Stringer interface.

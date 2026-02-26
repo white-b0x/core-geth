@@ -481,6 +481,33 @@ func (c *CoreGethChainConfig) SetEIP7623Transition(n *uint64) error {
 	return nil
 }
 
+func (c *CoreGethChainConfig) GetEIP7951Transition() *uint64 {
+	return bigNewU64(c.EIP7951FBlock)
+}
+
+func (c *CoreGethChainConfig) SetEIP7951Transition(n *uint64) error {
+	c.EIP7951FBlock = setBig(c.EIP7951FBlock, n)
+	return nil
+}
+
+func (c *CoreGethChainConfig) GetEIP2935Transition() *uint64 {
+	return bigNewU64(c.EIP2935FBlock)
+}
+
+func (c *CoreGethChainConfig) SetEIP2935Transition(n *uint64) error {
+	c.EIP2935FBlock = setBig(c.EIP2935FBlock, n)
+	return nil
+}
+
+func (c *CoreGethChainConfig) GetEIP7702Transition() *uint64 {
+	return bigNewU64(c.EIP7702FBlock)
+}
+
+func (c *CoreGethChainConfig) SetEIP7702Transition(n *uint64) error {
+	c.EIP7702FBlock = setBig(c.EIP7702FBlock, n)
+	return nil
+}
+
 func (c *CoreGethChainConfig) GetEIP2315Transition() *uint64 {
 	return bigNewU64(c.EIP2315FBlock)
 }
