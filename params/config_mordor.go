@@ -92,6 +92,12 @@ var (
 		EIP1559FBlock: big.NewInt(99_999_999), // Placeholder — set real block after testing
 		EIP3198FBlock: big.NewInt(99_999_999), // BASEFEE opcode
 
+		// Olympia (ECIP-1121: Cancun-equivalent EIPs)
+		EIP5656FBlock: big.NewInt(99_999_999), // MCOPY instruction
+		EIP1153FBlock: big.NewInt(99_999_999), // Transient storage (TLOAD/TSTORE)
+		EIP6780FBlock: big.NewInt(99_999_999), // SELFDESTRUCT only in same tx
+		EIP2537FBlock: big.NewInt(99_999_999), // BLS12-381 precompiles
+
 		DisposalBlock:            big.NewInt(0),
 		ECIP1017FBlock:           big.NewInt(0),
 		ECIP1017EraRounds:        big.NewInt(2000000),
