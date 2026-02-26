@@ -351,6 +351,10 @@ func (st *StateTransition) preCheck() error {
 			}
 		}
 	}
+	// EIP-7825: Verify transaction gas limit does not exceed per-tx cap.
+	if st.evm.ChainConfig().IsEnabled(st.evm.ChainConfig().GetEIP7825Transition, st.evm.Context.BlockNumber) && msg.GasLimit > vars.MaxTxGas {
+		return fmt.Errorf("%w (cap: %d, tx: %d)", ErrGasLimitTooHigh, vars.MaxTxGas, msg.GasLimit)
+	}
 	return st.buyGas()
 }
 

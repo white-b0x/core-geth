@@ -88,6 +88,10 @@ func ValidateTransaction(tx *types.Transaction, head *types.Header, signer types
 	if head.GasLimit < tx.Gas() {
 		return ErrGasLimit
 	}
+	// EIP-7825: Ensure tx gas does not exceed per-tx cap
+	if opts.Config.IsEnabled(opts.Config.GetEIP7825Transition, head.Number) && tx.Gas() > vars.MaxTxGas {
+		return fmt.Errorf("%w (cap: %d, tx: %d)", core.ErrGasLimitTooHigh, vars.MaxTxGas, tx.Gas())
+	}
 	// Sanity check for extremely large numbers (supported by RLP or RPC)
 	if tx.GasFeeCap().BitLen() > 256 {
 		return core.ErrFeeCapVeryHigh
