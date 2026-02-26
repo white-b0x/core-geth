@@ -39,6 +39,7 @@ import (
 	"github.com/ethereum/go-ethereum/params/vars"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/trie"
+	"github.com/holiman/uint256"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -615,6 +616,17 @@ func (ethash *Ethash) Prepare(chain consensus.ChainHeaderReader, header *types.H
 func (ethash *Ethash) Finalize(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, withdrawals []*types.Withdrawal) {
 	// Accumulate any block and uncle rewards and commit the final state root
 	mutations.AccumulateRewards(chain.Config(), state, header, uncles)
+
+	// ECIP-1111: Credit basefee to Olympia Treasury instead of burning.
+	// baseFeeAmount = block.gasUsed * block.baseFee
+	if chain.Config().IsEnabled(chain.Config().GetEIP1559Transition, header.Number) {
+		if treasuryAddr := chain.Config().GetOlympiaTreasuryAddress(); treasuryAddr != nil && header.BaseFee != nil {
+			baseFee, _ := uint256.FromBig(header.BaseFee)
+			baseFeeAmount := new(uint256.Int).SetUint64(header.GasUsed)
+			baseFeeAmount.Mul(baseFeeAmount, baseFee)
+			state.AddBalance(*treasuryAddr, baseFeeAmount)
+		}
+	}
 }
 
 // FinalizeAndAssemble implements consensus.Engine, accumulating the block and
