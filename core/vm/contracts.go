@@ -30,6 +30,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto/bls12381"
 	"github.com/ethereum/go-ethereum/crypto/bn256"
 	"github.com/ethereum/go-ethereum/crypto/kzg4844"
+	"github.com/ethereum/go-ethereum/crypto/secp256r1"
 	"github.com/ethereum/go-ethereum/params/types/ctypes"
 	"github.com/ethereum/go-ethereum/params/vars"
 	"golang.org/x/crypto/ripemd160"
@@ -108,6 +109,9 @@ func PrecompiledContractsForConfig(config ctypes.ChainConfigurator, bn *big.Int,
 	}
 	if config.IsEnabledByTime(config.GetEIP4844TransitionTime, bt) || config.IsEnabled(config.GetEIP4844Transition, bn) {
 		precompileds[common.BytesToAddress([]byte{0x0a})] = &kzgPointEvaluation{}
+	}
+	if config.IsEnabled(config.GetEIP7951Transition, bn) {
+		precompileds[common.BytesToAddress([]byte{0x01, 0x00})] = &p256Verify{}
 	}
 
 	return precompileds
@@ -299,7 +303,41 @@ func (c *bigModExp) RequiredGas(input []byte) uint64 {
 	adjExpLen.Add(adjExpLen, big.NewInt(int64(msb)))
 	// Calculate the gas cost of the operation
 	gas := new(big.Int).Set(math.BigMax(modLen, baseLen))
-	if c.eip2565 {
+	if c.eip7883 {
+		// EIP-7883: Osaka modexp gas formula
+		// multComplexity: if maxLen <= 32 → 16; else → 2 * ceil(maxLen/8)^2
+		// iterationCount: max((expLen-32)*16 + msb, 1) for expLen > 32
+		//                 max(msb, 1) for expLen <= 32
+		// gas = multComplexity * iterationCount, min 500
+		var multComplexity *big.Int
+		if gas.Cmp(big32) <= 0 {
+			multComplexity = big.NewInt(16)
+		} else {
+			multComplexity = new(big.Int).Set(gas)
+			multComplexity.Add(multComplexity, big7)
+			multComplexity.Div(multComplexity, big8)
+			multComplexity.Mul(multComplexity, multComplexity)
+			multComplexity.Mul(multComplexity, big.NewInt(2)) // 2x for Osaka
+		}
+		// iterationCount with multiplier=16 (instead of Berlin's 8)
+		iterCount := new(big.Int)
+		if expLen.Cmp(big32) > 0 {
+			iterCount.Sub(new(big.Int).Set(expLen), big32)
+			iterCount.Mul(iterCount, big.NewInt(16))
+		}
+		iterCount.Add(iterCount, big.NewInt(int64(msb)))
+		if iterCount.Sign() <= 0 {
+			iterCount.SetInt64(1)
+		}
+		gas = new(big.Int).Mul(multComplexity, iterCount)
+		if gas.BitLen() > 64 {
+			return math.MaxUint64
+		}
+		if gas.Uint64() < 500 {
+			return 500
+		}
+		return gas.Uint64()
+	} else if c.eip2565 {
 		// EIP-2565 has three changes
 		// 1. Different multComplexity (inlined here)
 		// in EIP-2565 (https://eips.ethereum.org/EIPS/eip-2565):
@@ -308,21 +346,9 @@ func (c *bigModExp) RequiredGas(input []byte) uint64 {
 		//    ceiling(x/8)^2
 		//
 		// where is x is max(length_of_MODULUS, length_of_BASE)
-		maxLenOver32 := gas.Cmp(big32) > 0 // capture before gas is modified
 		gas = gas.Add(gas, big7)
 		gas = gas.Div(gas, big8)
 		gas.Mul(gas, gas)
-
-		// EIP-7883: Increase ModExp gas cost
-		var minPrice uint64 = 200
-		if c.eip7883 {
-			minPrice = 500
-			if maxLenOver32 {
-				gas.Add(gas, gas) // Double gas for large inputs
-			} else {
-				gas = big.NewInt(16) // Small inputs get flat cost
-			}
-		}
 
 		gas.Mul(gas, math.BigMax(adjExpLen, big1))
 		// 2. Different divisor (`GQUADDIVISOR`) (3)
@@ -330,9 +356,9 @@ func (c *bigModExp) RequiredGas(input []byte) uint64 {
 		if gas.BitLen() > 64 {
 			return math.MaxUint64
 		}
-		// 3. Minimum price (200 gas, or 500 with EIP-7883)
-		if gas.Uint64() < minPrice {
-			return minPrice
+		// 3. Minimum price of 200 gas
+		if gas.Uint64() < 200 {
+			return 200
 		}
 		return gas.Uint64()
 	}
@@ -1037,6 +1063,32 @@ func (c *bls12381MapG2) Run(input []byte) ([]byte, error) {
 
 	// Encode the G2 point to 256 bytes
 	return g.EncodePoint(r), nil
+}
+
+// p256Verify implements EIP-7951: secp256r1 (P-256) signature verification precompile.
+type p256Verify struct{}
+
+// RequiredGas returns the gas required to execute the precompiled contract.
+func (c *p256Verify) RequiredGas(input []byte) uint64 {
+	return vars.P256VerifyGas
+}
+
+// Run executes the precompiled contract, returning the output and the used gas.
+func (c *p256Verify) Run(input []byte) ([]byte, error) {
+	const p256VerifyInputLength = 160
+	if len(input) != p256VerifyInputLength {
+		return nil, nil
+	}
+	// Extract hash, r, s, x, y from the input.
+	hash := input[0:32]
+	r, s := new(big.Int).SetBytes(input[32:64]), new(big.Int).SetBytes(input[64:96])
+	x, y := new(big.Int).SetBytes(input[96:128]), new(big.Int).SetBytes(input[128:160])
+
+	// Verify the secp256r1 signature.
+	if secp256r1.Verify(hash, r, s, x, y) {
+		return true32Byte, nil
+	}
+	return nil, nil
 }
 
 // kzgPointEvaluation implements the EIP-4844 point evaluation precompile.

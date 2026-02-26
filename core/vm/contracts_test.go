@@ -94,6 +94,10 @@ var allPrecompiles = map[common.Address]PrecompiledContract{
 	common.BytesToAddress([]byte{0x0f, 0x10}): &bls12381Pairing{},
 	common.BytesToAddress([]byte{0x0f, 0x11}): &bls12381MapG1{},
 	common.BytesToAddress([]byte{0x0f, 0x12}): &bls12381MapG2{},
+	common.BytesToAddress([]byte{0x01, 0x00}): &p256Verify{},
+	common.BytesToAddress([]byte{0xf6}):       &bigModExp{eip2565: true, eip7883: true},           // EIP-7883
+	common.BytesToAddress([]byte{0xf7}):       &bigModExp{eip2565: true, eip7823: true},           // EIP-7823
+	common.BytesToAddress([]byte{0xf8}):       &bigModExp{eip2565: true, eip7823: true, eip7883: true}, // EIP-7823+7883
 }
 
 func testPrecompiled(addr string, test precompiledTest, t *testing.T) {
@@ -337,6 +341,36 @@ func BenchmarkPrecompiledModExp(b *testing.B) { benchJson("modexp", "05", b) }
 func TestPrecompiledModExpEip2565(t *testing.T)      { testJson("modexp_eip2565", "f5", t) }
 func BenchmarkPrecompiledModExpEip2565(b *testing.B) { benchJson("modexp_eip2565", "f5", b) }
 
+func TestPrecompiledModExpEip7883(t *testing.T)      { testJson("modexp_eip7883", "f6", t) }
+func BenchmarkPrecompiledModExpEip7883(b *testing.B) { benchJson("modexp_eip7883", "f6", b) }
+
+func TestPrecompiledModExpEip7823Fail(t *testing.T) { testJsonFail("modexp_eip7823", "f7", t) }
+
+// TestPrecompiledModExpEip7823Boundary verifies 1024-byte operands are accepted (at limit).
+func TestPrecompiledModExpEip7823Boundary(t *testing.T) {
+	p := allPrecompiles[common.HexToAddress("f8")]
+	// Construct input: base=1024 bytes, exp=1 byte, mod=1 byte
+	// Header: baseLen=0x400, expLen=0x01, modLen=0x01
+	header := common.Hex2Bytes(
+		"0000000000000000000000000000000000000000000000000000000000000400" + // baseLen = 1024
+			"0000000000000000000000000000000000000000000000000000000000000001" + // expLen = 1
+			"0000000000000000000000000000000000000000000000000000000000000001") // modLen = 1
+	data := make([]byte, 1024+1+1) // 1024 base + 1 exp + 1 mod
+	data[0] = 0x02                 // base = 2 (left-padded with zeros)
+	data[1024] = 0x03              // exp = 3
+	data[1025] = 0x07              // mod = 7
+	input := append(header, data...)
+	gas := p.RequiredGas(input)
+	res, _, err := RunPrecompiledContract(p, input, gas)
+	if err != nil {
+		t.Fatalf("EIP-7823 should accept 1024-byte operands, got error: %v", err)
+	}
+	// 2^3 mod 7 = 1
+	if common.Bytes2Hex(res) != "01" {
+		t.Errorf("Expected 01, got %v", common.Bytes2Hex(res))
+	}
+}
+
 // Tests the sample inputs from the elliptic curve addition EIP 213.
 func TestPrecompiledBn256Add(t *testing.T)      { testJson("bn256Add", "06", t) }
 func BenchmarkPrecompiledBn256Add(b *testing.B) { benchJson("bn256Add", "06", b) }
@@ -412,6 +446,9 @@ func TestPrecompiledBLS12381MapG1(t *testing.T)      { testJson("blsMapG1", "f11
 func TestPrecompiledBLS12381MapG2(t *testing.T)      { testJson("blsMapG2", "f12", t) }
 
 func TestPrecompiledPointEvaluation(t *testing.T) { testJson("pointEvaluation", "0a", t) }
+
+func TestPrecompiledP256Verify(t *testing.T)      { testJson("p256Verify", "100", t) }
+func BenchmarkPrecompiledP256Verify(b *testing.B) { benchJson("p256Verify", "100", b) }
 
 func BenchmarkPrecompiledBLS12381G1Add(b *testing.B)      { benchJson("blsG1Add", "f0a", b) }
 func BenchmarkPrecompiledBLS12381G1Mul(b *testing.B)      { benchJson("blsG1Mul", "f0b", b) }
