@@ -17,6 +17,7 @@
 package core
 
 import (
+	"bytes"
 	"fmt"
 	"math"
 	"math/big"
@@ -114,6 +115,17 @@ func IntrinsicGas(data []byte, accessList types.AccessList, isContractCreation b
 		gas += uint64(accessList.StorageKeys()) * vars.TxAccessListStorageKeyGas
 	}
 	return gas, nil
+}
+
+// FloorDataGas computes the minimum gas required for a transaction based on its data tokens (EIP-7623).
+func FloorDataGas(data []byte) (uint64, error) {
+	z := uint64(bytes.Count(data, []byte{0}))
+	nz := uint64(len(data)) - z
+	tokens := nz*vars.TxTokenPerNonZeroByte + z
+	if (math.MaxUint64-vars.TxGas)/vars.TxCostFloorPerToken < tokens {
+		return 0, ErrGasUintOverflow
+	}
+	return vars.TxGas + tokens*vars.TxCostFloorPerToken, nil
 }
 
 // toWordSize returns the ceiled word size required for init code payment calculation.
@@ -436,6 +448,18 @@ func (st *StateTransition) TransitionDb() (*ExecutionResult, error) {
 	}
 	st.gasRemaining -= gas
 
+	// EIP-7623: Floor data gas — compute and validate before execution
+	var floorDataGas uint64
+	if st.evm.ChainConfig().IsEnabled(st.evm.ChainConfig().GetEIP7623Transition, st.evm.Context.BlockNumber) {
+		floorDataGas, err = FloorDataGas(msg.Data)
+		if err != nil {
+			return nil, err
+		}
+		if msg.GasLimit < floorDataGas {
+			return nil, fmt.Errorf("%w: have %d, want %d", ErrFloorDataGas, msg.GasLimit, floorDataGas)
+		}
+	}
+
 	// Check clause 6
 	value, overflow := uint256.FromBig(msg.Value)
 	if overflow {
@@ -466,6 +490,11 @@ func (st *StateTransition) TransitionDb() (*ExecutionResult, error) {
 		// Increment the nonce for the next transaction
 		st.state.SetNonce(msg.From, st.state.GetNonce(sender.Address())+1)
 		ret, st.gasRemaining, vmerr = st.evm.Call(sender, st.to(), msg.Data, st.gasRemaining, value)
+	}
+
+	// EIP-7623: Data-heavy transactions pay the floor gas.
+	if floorDataGas > 0 && st.gasUsed() < floorDataGas {
+		st.gasRemaining = st.initialGas - floorDataGas
 	}
 
 	var gasRefund uint64

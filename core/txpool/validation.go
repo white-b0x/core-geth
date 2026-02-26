@@ -116,6 +116,16 @@ func ValidateTransaction(tx *types.Transaction, head *types.Header, signer types
 	if tx.Gas() < intrGas {
 		return fmt.Errorf("%w: gas %v, minimum needed %v", core.ErrIntrinsicGas, tx.Gas(), intrGas)
 	}
+	// EIP-7623: Ensure tx can cover floor data gas
+	if opts.Config.IsEnabled(opts.Config.GetEIP7623Transition, head.Number) {
+		floorDataGas, err := core.FloorDataGas(tx.Data())
+		if err != nil {
+			return err
+		}
+		if tx.Gas() < floorDataGas {
+			return fmt.Errorf("%w: gas %v, minimum needed %v", core.ErrFloorDataGas, tx.Gas(), floorDataGas)
+		}
+	}
 	// Ensure the gasprice is high enough to cover the requirement of the calling pool
 	if tx.GasTipCapIntCmp(opts.MinTip) < 0 {
 		return fmt.Errorf("%w: gas tip cap %v, minimum needed %v", ErrUnderpriced, tx.GasTipCap(), opts.MinTip)
