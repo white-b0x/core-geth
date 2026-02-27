@@ -21,7 +21,7 @@ The Olympia upgrade brings EIP-1559 dynamic fees and Cancun-equivalent EVM impro
 
 ---
 
-## Commit Log (16 commits on `olympia` branch)
+## Commit Log (27 commits on `olympia` branch)
 
 | # | SHA | Description |
 |---|-----|-------------|
@@ -45,6 +45,11 @@ The Olympia upgrade brings EIP-1559 dynamic fees and Cancun-equivalent EVM impro
 | 18 | d3f62a819 | feat: EIP-7910 (eth_config RPC endpoint) |
 | 19 | c4c5540da | feat: set Mordor activation block 15,800,850 + forkid |
 | 20 | f5c24c6f9 | feat: set Mordor treasury to deployed contract |
+| 21 | ddb26b115 | docs: add implementation handoff report |
+| 22 | 06af56eb6 | test: address ChatGPT security review — 13 tests (reorg, EIP-2935, txpool, treasury, EIP-7702) |
+| 23 | 57bf6d76e | test: security budget analysis at 60M gas limit (17,650 txs, baseFee dynamics report) |
+| 24 | a059d4615 | docs: update handoff report with full test coverage |
+| 25 | 870a1f439 | test: security budget at ECIP-1017 era 4/5 with 30K txs/day baseline |
 
 ---
 
@@ -115,15 +120,47 @@ Four CVEs patched before any feature work:
 
 ## Test Coverage
 
-### New Tests Written
+### New Tests Written (Original Implementation)
 
 | File | Tests | What |
 |------|-------|------|
 | `consensus/ethash/consensus_test.go` | Treasury redirect | baseFee*gasUsed credited, zero-gas blocks, fork boundary, miner tips |
-| `core/backward_compat_test.go` | Backward compatibility | Pre-fork blocks unchanged, ECIP-1017 era rewards correct |
+| `core/backward_compat_test.go` | Backward compatibility | Pre-fork blocks unchanged, ECIP-1017 era rewards, all tx types, gas accounting |
 | `core/eip7934_test.go` | Block size limit | Constant value, normal blocks pass, error defined |
 | `core/vm/contracts_test.go` | ModExp + P256 | Gas calc, bounds check, precompile test vectors |
 | `core/forkid/forkid_test.go` | Forkid | Updated Mordor creation + gatherForks tests |
+
+### Review-Response Tests (13 tests, commit 06af56e)
+
+Added to address external security review concerns:
+
+| File | Tests | What |
+|------|-------|------|
+| `core/backward_compat_test.go` | +1 | Reorg across fork boundary with treasury state verification |
+| `core/eip2935_test.go` | +2 | Block hash persistence at HISTORY_STORAGE_ADDRESS, reorg updates hashes |
+| `core/txpool/validation_test.go` | +6 | EIP-7825 30M gas cap, EIP-7623 calldata pricing (Legacy, AccessList, DynamicFee, SetCode) |
+| `core/treasury_test.go` | +2 | 50-block cumulative accumulation, immutable treasury address |
+| `core/eip7702_test.go` | +2 | Self-delegation, code clears after revocation via nonce bump |
+
+### Security Budget Analysis (1 test, commits 57bf6d7 → updated)
+
+| File | Tests | What |
+|------|-------|------|
+| `core/security_budget_test.go` | 1 | 60-block ECIP-1017 era 4/5 simulation at 60M gas limit with 30K txs/day baseline |
+
+Uses ECIP-1017 era-based rewards (eraLength=10 blocks for test acceleration) to simulate current ETC mainnet conditions. Baseline: **30,000 txs/day ÷ ~6,200 blocks/day ≈ 5 txs/block** (ETC mainnet floor).
+
+Three phases:
+- **Era 4 "Activation"** (2.048 ETC/block, 5 txs/block): Olympia goes live near block 24M
+- **Era 5 "Normal"** (1.6384 ETC/block, 5 txs/block): After 25M era boundary
+- **Era 5 "Congestion"** (1.6384 ETC/block, 2,000 txs/block): Network under load
+
+Produces a detailed ASCII report showing:
+- Per-block baseFee trajectory with era-adjusted block rewards
+- Miner income breakdown: block rewards vs tips by tx type (Legacy, AccessList, DynamicFee)
+- Treasury income: baseFee × gasUsed (ECIP-1111 redirect)
+- Per-phase security budget ratios comparing baseline vs congestion
+- Key findings: At 30K txs/day baseline, tips are 0.01% of miner income — block rewards are the entire security budget. Under congestion (2,000 txs/block), tips rise to ~5% and treasury funding increases ~19×
 
 ### Existing Test Suites
 
@@ -135,6 +172,84 @@ go test ./core/vm/...              # EVM opcodes + precompiles (PASS)
 go test ./core/...                 # State processor, transitions (PASS)
 go test ./params/...               # Config (PASS)
 ```
+
+---
+
+## Consensus-Breaking Changes
+
+These are the exact consensus-breaking changes that will cause pre-Olympia nodes to reject post-Olympia blocks (or vice versa):
+
+### Block Header
+- **BaseFee field** now non-nil (EIP-1559). Pre-fork nodes will reject headers with BaseFee.
+- **BaseFee adjustment algorithm** active (EIP-1559 `CalcBaseFee`). Invalid BaseFee = invalid block.
+
+### State Transition
+- **Treasury credit** in `Finalize()`: `baseFee * gasUsed` credited to treasury after `AccumulateRewards`. Changes stateRoot.
+- **EIP-2935 system call**: `ProcessParentBlockHash` executes at start of each block, deploying history contract at fork block. Changes stateRoot.
+- **EIP-7623 floor data gas**: Transactions with insufficient gas for calldata floor rejected during execution.
+- **EIP-7825 tx gas cap**: Transactions with gas > 30M rejected during pre-checks.
+- **EIP-7702 tx type (0x04)**: New transaction type with authorization list processing. Changes account code via delegation prefix.
+
+### EVM
+- **EIP-5656 MCOPY**: New opcode 0x5E
+- **EIP-1153 TLOAD/TSTORE**: New opcodes 0x5C/0x5D
+- **EIP-6780 SELFDESTRUCT**: Restricted to same-transaction creation
+- **EIP-7702 delegation resolution**: CALL/STATICCALL/DELEGATECALL resolve delegation prefix codes (one level deep)
+
+### Precompiles
+- **EIP-2537 BLS12-381**: Precompiles at 0x0a–0x12
+- **EIP-7951 P256VERIFY**: Precompile at 0x100
+- **EIP-7883 ModExp**: Increased gas cost formula
+- **EIP-7823 ModExp**: 1024-byte input limit
+
+### Validation
+- **EIP-7934 block size**: RLP-encoded blocks > ~8 MiB rejected
+- **EIP-7935 default gas limit**: Miner default changed to 60M (miner policy, not consensus-breaking)
+
+---
+
+## State Transition Ordering (Finalize)
+
+The finalization ordering in `consensus/ethash/consensus.go:Finalize()` is deterministic and critical for state root consistency:
+
+**1. AccumulateRewards** (`mutations.AccumulateRewards`)
+- Process uncle rewards first (uncle coinbase gets era-adjusted reward per uncle)
+- Process miner reward (era_reward + 1/32 * era_reward per uncle included)
+- Era reward subject to ECIP-1017 disinflation: `5 ETC * (4/5)^era`
+
+**2. Treasury Credit** (ECIP-1111)
+- Guard: EIP-1559 must be active AND `OlympiaTreasuryAddress` must be non-nil AND `header.BaseFee` must be non-nil
+- Credit: `state.AddBalance(treasuryAddr, baseFee * gasUsed)`
+- If no treasury configured: baseFee is implicitly burned (vanilla EIP-1559 behavior)
+
+**3. IntermediateRoot** (in `FinalizeAndAssemble`)
+- State root computed AFTER steps 1 and 2
+- This is the `header.Root` committed to the block
+
+**Note:** EIP-2935 `ProcessParentBlockHash` runs at the START of block processing (in `state_processor.go`), before any transactions execute. This is a system-level state modification that stores the parent block's hash in the history contract.
+
+---
+
+## Known Risks
+
+### Single Production Client
+Core-geth is the only production ETC client. Hyperledger Besu and Fukuii exist but are not production-ready. There is no cross-client consensus validation possible at this time. All consensus changes are validated by test coverage and Mordor soak testing only. A consensus bug means a network halt, not a chain split. Cross-client testing becomes relevant when Besu or Fukuii mature enough to implement Olympia.
+
+### EIP-7702 Edge Cases
+EIP-7702 was designed and fuzzed for Ethereum's multi-client PoS environment. ETC's PoW context has not undergone cross-client differential fuzzing. Specific risk areas:
+- Delegation + SELFDESTRUCT (EIP-6780 restriction mitigates but does not eliminate)
+- Delegation chain resolution (enforced one-level deep in `resolveCode`)
+- Self-delegation (account delegates to itself)
+- Authorization replay across chains with matching chain IDs
+
+### P-256 Performance (EIP-7951)
+The P256VERIFY precompile uses Go's `crypto/elliptic` stdlib, not optimized assembly. Under adversarial conditions at ETC's 8M gas limit, this is unlikely to be a practical issue, but lacks the performance margins of assembly implementations used in Ethereum clients.
+
+### ModExp Repricing (EIP-7883)
+The gas formula change may cause edge cases where previously-affordable ModExp calls become too expensive, breaking contracts that depend on specific gas costs. Existing ModExp usage on ETC is minimal, reducing practical risk.
+
+### Gas Limit and Fee Market Dynamics
+EIP-7935 changes the default gas limit from 8M to **60M**, with an EIP-1559 target of **30M** (limit/2). This is a miner policy default — miners can still adjust it. At 60M, the network needs **1,428+ simple transfers per block** just to start pushing baseFee upward. ETC mainnet currently averages ~30,000 txs/day (~5 txs/block) — **0.2% utilization** at 60M. The `TestSecurityBudgetAnalysis` test simulates era 4 (2.048 ETC/block) and era 5 (1.6384 ETC/block) at this baseline, showing block rewards constitute 99.99% of miner income. Under congestion (2,000 txs/block, 70% utilization), tips rise to ~5% and treasury funding increases ~19×. EIP-7825's 30M per-tx gas cap remains below the block gas limit. Stress profiles are fundamentally different from Ethereum mainnet.
 
 ---
 
@@ -152,12 +267,23 @@ go test ./params/...               # Config (PASS)
 - `DEFAULT_ADMIN_ROLE` — can grant/revoke roles
 - `WITHDRAWER_ROLE` — can call `withdraw(to, amount)`
 
-**Staged governance plan:**
-1. Phase 1 (now): Admin EOA controls withdrawals
-2. Phase 2: Deploy futarchy DAO, grant it WITHDRAWER_ROLE
-3. Phase 3: Revoke admin's WITHDRAWER_ROLE, DAO is sole spender
+**Immutability guarantee:** The treasury contract has no mint function. It can only receive baseFee revenue credited by consensus (`Finalize()` in the ethash engine). The admin can only withdraw accumulated funds via `withdraw(to, amount)`, not create new ETC. The total ETC in the treasury is always ≤ the sum of `baseFee * gasUsed` across all post-Olympia blocks.
 
-**Tests:** 10 passing (roles, withdrawal, revocation, events, edge cases)
+**Staged governance plan** (demonstrated in `test/StagedEvolution.t.sol`):
+1. Stage 1 (ECIP-1111 + 1112): coreMultisig bootstraps treasury, accumulates baseFee
+2. Stage 2 (+ ECIP-1113): coreMultisig transfers DEFAULT_ADMIN_ROLE to CoreDAO for non-contentious infra funding
+3. Stage 3 (+ ECIP-1117): CoreDAO enables FutarchyDAO for contentious ecosystem proposals (coexist)
+4. Stage 4 (+ ECIP-1115): CoreDAO enables LCurveDistributor for predictable miner incentives
+
+Authorization chain: coreMultisig → CoreDAO → {FutarchyDAO, LCurveDistributor}
+DAO migration pattern: `transferAdminTo()` + `disablePipeline()` (tested in edge case)
+
+**Mock contracts** (`test/mocks/`):
+- `MockCoreDAO.sol` — ECIP-1113: `fundCoreInfra()`, `enablePipeline()`, `disablePipeline()`, `transferAdminTo()`
+- `MockFutarchyDAO.sol` — ECIP-1117: `executeProposal()`
+- `MockLCurveDistributor.sol` — ECIP-1115: `distribute()` with logarithmic weighting
+
+**Tests:** 16 passing (10 unit tests + 6 staged evolution tests)
 
 ---
 
@@ -236,7 +362,55 @@ go test ./core/vm/...              # EVM opcodes + precompiles
 go test ./core/...                 # State processor
 go test ./params/...               # Config
 
-# Treasury contract
+# Review-response tests (13 tests)
+go test ./core -run "TestOlympiaReorg|TestEIP2935|TestEIP7702|TestTreasuryCumulative|TestTreasuryImmutable" -v
+go test ./core/txpool -run "TestEIP7825|TestEIP7623" -v
+
+# Security budget analysis (generates detailed report)
+go test ./core -run "TestSecurityBudget" -v
+
+# Live RPC integration tests (41 tests, requires running Mordor node on :8545)
+go test -tags live ./tests/live/ -v
+
+# Treasury contract (Foundry)
 cd /media/dev/2tb/dev/olympia-treasury-contract
-forge test -vv
+forge test -vv                                          # All 16 tests
+forge test --match-path test/StagedEvolution.t.sol -vv  # Staged evolution only
 ```
+
+---
+
+## Live Integration Tests (tests/live/)
+
+**Build tag:** `//go:build live` — excluded from normal `go test ./...`
+**Requires:** Running Mordor node on `:8545` (configurable via `MORDOR_RPC` env)
+**Total: 41 tests across 14 files**
+
+### Pre-Fork Tests (run against any synced Mordor node)
+| File | Tests | What |
+|------|-------|------|
+| `chain_basics_test.go` | 8 | Chain ID, genesis hash, block structure, no baseFee pre-fork, ETC mainnet basics |
+| `tx_types_test.go` | 2 | No Type-2/4 TXs pre-Olympia, legacy TX decode |
+| `treasury_prefork_test.go` | 1 | Treasury balance snapshot |
+| `precompiles_prefork_test.go` | 2 | ecrecover works, P256Verify not active |
+
+### Post-Fork Tests (skip gracefully if fork not reached)
+| File | Tests | What |
+|------|-------|------|
+| `eip1559_live_test.go` | 4 | Fork block baseFee, initial=1 gwei, adjustment, Type-2 TX |
+| `treasury_live_test.go` | 2 | Treasury balance increases, credit matches baseFee*gasUsed |
+| `eip7702_live_test.go` | 2 | Type-4 TX scan, delegation code (0xef0100) prefix |
+| `eip2935_live_test.go` | 2 | System contract deployed, parent hash stored |
+| `precompiles_live_test.go` | 4 | P256Verify, BLS stubs, ModExp, ecrecover post-fork |
+| `eip7934_live_test.go` | 1 | Blocks under 8MB RLP cap |
+
+### PoW/ETChash Mining Tests
+| File | Tests | What |
+|------|-------|------|
+| `pow_mining_test.go` | 9 | Valid PoW fields, difficulty ranges, ECIP-1099 boundary, ECIP-1017 eras, timestamps, gas limit rules, ETC mainnet PoW |
+
+### Cross-Client Tests (optional, skip if clients unavailable)
+| File | Tests | What |
+|------|-------|------|
+| `cross_client_test.go` | 2 | Fork block hash + state root across core-geth/fukuii/besu |
+| `mainnet_test.go` | 2 | ETC mainnet era rewards, treasury balance |

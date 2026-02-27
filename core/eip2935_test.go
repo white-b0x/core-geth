@@ -217,3 +217,93 @@ func TestEIP2935ContractDeployment(t *testing.T) {
 		_ = i
 	}
 }
+
+// TestEIP2935ReorgUpdatesHashes verifies that after a chain reorganization,
+// the EIP-2935 history storage contract contains the correct parent hashes
+// for the new canonical chain.
+func TestEIP2935ReorgUpdatesHashes(t *testing.T) {
+	config := newEIP2935Config(1) // activate at block 1
+
+	gspec := &genesisT.Genesis{
+		Config:     config,
+		GasLimit:   5_000_000,
+		Difficulty: vars.MinimumDifficulty,
+		BaseFee:    big.NewInt(vars.InitialBaseFee),
+	}
+
+	gendbA := rawdb.NewMemoryDatabase()
+	genesisA := MustCommitGenesis(gendbA, triedb.NewDatabase(gendbA, triedb.HashDefaults), gspec)
+
+	gendbB := rawdb.NewMemoryDatabase()
+	genesisB := MustCommitGenesis(gendbB, triedb.NewDatabase(gendbB, triedb.HashDefaults), gspec)
+
+	// Chain A: 5 blocks
+	chainA, _ := GenerateChain(gspec.Config, genesisA, ethash.NewFaker(), gendbA, 5, nil)
+
+	// Chain B: 8 blocks (longer, triggers reorg) with different timestamps
+	// to produce different block hashes
+	chainB, _ := GenerateChain(gspec.Config, genesisB, ethash.NewFaker(), gendbB, 8, func(i int, gen *BlockGen) {
+		gen.OffsetTime(1) // slightly different timestamps → different hashes
+	})
+
+	// Verify chains actually differ
+	if chainA[0].Hash() == chainB[0].Hash() {
+		t.Fatal("chain A and B block 1 should have different hashes")
+	}
+
+	// Insert chain A
+	db := rawdb.NewMemoryDatabase()
+	MustCommitGenesis(db, triedb.NewDatabase(db, triedb.HashDefaults), gspec)
+	blockchain, _ := NewBlockChain(db, nil, gspec, nil, ethash.NewFaker(), vm.Config{}, nil, nil)
+	defer blockchain.Stop()
+
+	if _, err := blockchain.InsertChain(chainA); err != nil {
+		t.Fatalf("failed to insert chain A: %v", err)
+	}
+
+	// Verify chain A hashes stored correctly
+	stateA, _ := blockchain.State()
+	for _, block := range chainA {
+		slot := (block.NumberU64() - 1) % vars.HistoryServeWindow
+		got := stateA.GetState(vars.HistoryStorageAddress, common.BigToHash(new(big.Int).SetUint64(slot)))
+		if got != block.ParentHash() {
+			t.Errorf("chain A block %d: wrong parent hash at slot %d", block.NumberU64(), slot)
+		}
+	}
+
+	// Insert chain B (triggers reorg)
+	if _, err := blockchain.InsertChain(chainB); err != nil {
+		t.Fatalf("failed to insert chain B: %v", err)
+	}
+
+	// Verify head is now chain B
+	if head := blockchain.CurrentBlock().Number.Uint64(); head != 8 {
+		t.Fatalf("expected head at 8 after reorg, got %d", head)
+	}
+
+	// Verify chain B hashes are now in the history storage
+	stateB, _ := blockchain.State()
+	for _, block := range chainB {
+		slot := (block.NumberU64() - 1) % vars.HistoryServeWindow
+		got := stateB.GetState(vars.HistoryStorageAddress, common.BigToHash(new(big.Int).SetUint64(slot)))
+		want := block.ParentHash()
+		if got != want {
+			t.Errorf("after reorg, block %d: wrong parent hash at slot %d\n  got:  %s\n  want: %s",
+				block.NumberU64(), slot, got.Hex(), want.Hex())
+		}
+	}
+
+	// Verify the stored hashes are NOT chain A's hashes (for overlapping slots)
+	for i := 0; i < len(chainA) && i < len(chainB); i++ {
+		if chainA[i].ParentHash() == chainB[i].ParentHash() {
+			continue // genesis parent is the same
+		}
+		slot := (chainA[i].NumberU64() - 1) % vars.HistoryServeWindow
+		got := stateB.GetState(vars.HistoryStorageAddress, common.BigToHash(new(big.Int).SetUint64(slot)))
+		if got == chainA[i].ParentHash() {
+			t.Errorf("after reorg, slot %d still has chain A's parent hash", slot)
+		}
+	}
+
+	t.Log("EIP-2935 reorg: history storage correctly updated to chain B hashes")
+}

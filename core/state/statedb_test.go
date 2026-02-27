@@ -1102,6 +1102,63 @@ func TestStateDBTransientStorage(t *testing.T) {
 	}
 }
 
+// TestTransientStoragePrepareReset verifies that Prepare() resets transient
+// storage, ensuring per-transaction isolation as required by EIP-1153.
+func TestTransientStoragePrepareReset(t *testing.T) {
+	memDb := rawdb.NewMemoryDatabase()
+	db := NewDatabase(memDb)
+	state, _ := New(types.EmptyRootHash, db, nil)
+
+	addr := common.Address{0x01}
+	key := common.Hash{0x42}
+	value := common.Hash{0xAB}
+
+	// Simulate first transaction: set transient storage
+	state.SetTransientState(addr, key, value)
+	if got := state.GetTransientState(addr, key); got != value {
+		t.Fatalf("transient storage not set: have %x, want %x", got, value)
+	}
+
+	// Simulate second transaction: Prepare should reset transient storage
+	state.Prepare(true, true, common.Address{0x02}, common.Address{0x03}, nil, nil, nil)
+	if got := state.GetTransientState(addr, key); got != (common.Hash{}) {
+		t.Fatalf("transient storage not reset by Prepare: have %x, want empty", got)
+	}
+}
+
+// TestTransientStorageMultipleAddresses verifies transient storage isolation
+// across different addresses within the same transaction.
+func TestTransientStorageMultipleAddresses(t *testing.T) {
+	memDb := rawdb.NewMemoryDatabase()
+	db := NewDatabase(memDb)
+	state, _ := New(types.EmptyRootHash, db, nil)
+
+	addr1 := common.Address{0x01}
+	addr2 := common.Address{0x02}
+	key := common.Hash{0x01}
+	val1 := common.Hash{0xAA}
+	val2 := common.Hash{0xBB}
+
+	state.SetTransientState(addr1, key, val1)
+	state.SetTransientState(addr2, key, val2)
+
+	if got := state.GetTransientState(addr1, key); got != val1 {
+		t.Fatalf("addr1 transient: have %x, want %x", got, val1)
+	}
+	if got := state.GetTransientState(addr2, key); got != val2 {
+		t.Fatalf("addr2 transient: have %x, want %x", got, val2)
+	}
+
+	// Prepare resets all addresses
+	state.Prepare(true, true, common.Address{0x03}, common.Address{0x04}, nil, nil, nil)
+	if got := state.GetTransientState(addr1, key); got != (common.Hash{}) {
+		t.Fatalf("addr1 transient not reset: have %x", got)
+	}
+	if got := state.GetTransientState(addr2, key); got != (common.Hash{}) {
+		t.Fatalf("addr2 transient not reset: have %x", got)
+	}
+}
+
 func TestResetObject(t *testing.T) {
 	var (
 		disk     = rawdb.NewMemoryDatabase()

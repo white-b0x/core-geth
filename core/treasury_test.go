@@ -409,3 +409,101 @@ func TestTreasuryNoAddressNoBurn(t *testing.T) {
 		}
 	}
 }
+
+// TestTreasuryCumulativeAccumulation runs a 50-block chain with varying gas
+// usage per block (empty blocks, single-tx, multi-tx) and verifies the
+// treasury balance matches the exact sum of baseFee*gasUsed across all blocks.
+func TestTreasuryCumulativeAccumulation(t *testing.T) {
+	config := newTreasuryConfig(0)
+
+	gspec := &genesisT.Genesis{
+		Config:     config,
+		GasLimit:   5_000_000,
+		Difficulty: vars.MinimumDifficulty,
+		BaseFee:    big.NewInt(vars.InitialBaseFee),
+		Alloc: genesisT.GenesisAlloc{
+			treasuryTestAddr: {Balance: new(big.Int).Mul(big.NewInt(1000), big.NewInt(1e18))},
+		},
+	}
+
+	gendb := rawdb.NewMemoryDatabase()
+	db := rawdb.NewMemoryDatabase()
+	genesis := MustCommitGenesis(gendb, triedb.NewDatabase(gendb, triedb.HashDefaults), gspec)
+
+	recipient := common.Address{0xbb}
+	numBlocks := 50
+
+	genchain, _ := GenerateChain(gspec.Config, genesis, ethash.NewFaker(), gendb, numBlocks, func(i int, gen *BlockGen) {
+		blockNum := i + 1
+
+		// Vary gas usage pattern:
+		// Blocks 1-5: empty (no txs)
+		// Blocks 6-15: 1 tx each
+		// Blocks 16-25: 3 txs each
+		// Blocks 26-30: empty
+		// Blocks 31-50: 1 tx each
+		var txCount int
+		switch {
+		case blockNum <= 5:
+			txCount = 0
+		case blockNum <= 15:
+			txCount = 1
+		case blockNum <= 25:
+			txCount = 3
+		case blockNum <= 30:
+			txCount = 0
+		default:
+			txCount = 1
+		}
+
+		for j := 0; j < txCount; j++ {
+			tx := types.MustSignNewTx(treasuryTestKey, gen.Signer(), &types.LegacyTx{
+				Nonce:    gen.TxNonce(treasuryTestAddr),
+				To:       &recipient,
+				Value:    big.NewInt(1000),
+				Gas:      vars.TxGas,
+				GasPrice: new(big.Int).Add(gen.BaseFee(), big.NewInt(1_000_000_000)),
+			})
+			gen.AddTx(tx)
+		}
+	})
+
+	blockchain, _ := NewBlockChain(db, nil, gspec, nil, ethash.NewFaker(), vm.Config{}, nil, nil)
+	defer blockchain.Stop()
+
+	if i, err := blockchain.InsertChain(genchain); err != nil {
+		t.Fatalf("insert error (block %d): %v", genchain[i].NumberU64(), err)
+	}
+
+	// Calculate expected treasury: sum of baseFee * gasUsed for all blocks
+	var expectedTreasury uint256.Int
+	emptyBlocks := 0
+	txBlocks := 0
+	for _, block := range genchain {
+		baseFee := uint256.MustFromBig(block.BaseFee())
+		gasUsed := new(uint256.Int).SetUint64(block.GasUsed())
+		revenue := new(uint256.Int).Mul(baseFee, gasUsed)
+		expectedTreasury.Add(&expectedTreasury, revenue)
+
+		if block.GasUsed() == 0 {
+			emptyBlocks++
+		} else {
+			txBlocks++
+		}
+	}
+
+	statedb, err := blockchain.State()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actualTreasury := statedb.GetBalance(treasuryAddress)
+	if actualTreasury.Cmp(&expectedTreasury) != 0 {
+		t.Fatalf("treasury balance mismatch after %d blocks:\n  got:  %s\n  want: %s", numBlocks, actualTreasury, &expectedTreasury)
+	}
+	if expectedTreasury.IsZero() {
+		t.Fatal("expected non-zero treasury (chain had transactions)")
+	}
+
+	t.Logf("treasury correct: %s across %d blocks (%d with txs, %d empty)", &expectedTreasury, numBlocks, txBlocks, emptyBlocks)
+}

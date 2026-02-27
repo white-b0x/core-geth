@@ -95,3 +95,60 @@ func TestEIP7934ErrorDefined(t *testing.T) {
 		t.Fatalf("unexpected error message: %s", ErrBlockOversized.Error())
 	}
 }
+
+// TestEIP7934BlockSizeUnderCap verifies that normal blocks have RLP-encoded
+// sizes well below the 8 MiB cap, and that the Size() method works correctly.
+func TestEIP7934BlockSizeUnderCap(t *testing.T) {
+	config := newEIP7934Config(1)
+
+	gspec := &genesisT.Genesis{
+		Config:     config,
+		GasLimit:   8_000_000,
+		Difficulty: vars.MinimumDifficulty,
+	}
+
+	gendb := rawdb.NewMemoryDatabase()
+	genesis := MustCommitGenesis(gendb, triedb.NewDatabase(gendb, triedb.HashDefaults), gspec)
+
+	numBlocks := 5
+	genchain, _ := GenerateChain(gspec.Config, genesis, ethash.NewFaker(), gendb, numBlocks, nil)
+
+	for _, block := range genchain {
+		size := block.Size()
+		if size == 0 {
+			t.Fatalf("block %d has zero RLP size", block.NumberU64())
+		}
+		if size > vars.BlockRLPSizeCap {
+			t.Fatalf("block %d exceeds cap: size=%d, cap=%d", block.NumberU64(), size, vars.BlockRLPSizeCap)
+		}
+		t.Logf("block %d: RLP size=%d bytes (%.2f%% of cap)",
+			block.NumberU64(), size, float64(size)/float64(vars.BlockRLPSizeCap)*100)
+	}
+}
+
+// TestEIP7934PreForkBlocksPass verifies that blocks generated before
+// the EIP-7934 activation are accepted regardless of size constraints.
+func TestEIP7934PreForkBlocksPass(t *testing.T) {
+	config := newEIP7934Config(100) // activate far in the future
+
+	gspec := &genesisT.Genesis{
+		Config:     config,
+		GasLimit:   5_000_000,
+		Difficulty: vars.MinimumDifficulty,
+	}
+
+	gendb := rawdb.NewMemoryDatabase()
+	db := rawdb.NewMemoryDatabase()
+	genesis := MustCommitGenesis(gendb, triedb.NewDatabase(gendb, triedb.HashDefaults), gspec)
+
+	numBlocks := 3
+	genchain, _ := GenerateChain(gspec.Config, genesis, ethash.NewFaker(), gendb, numBlocks, nil)
+
+	blockchain, _ := NewBlockChain(db, nil, gspec, nil, ethash.NewFaker(), vm.Config{}, nil, nil)
+	defer blockchain.Stop()
+
+	// Pre-fork blocks should always be accepted
+	if i, err := blockchain.InsertChain(genchain); err != nil {
+		t.Fatalf("pre-fork block %d should not be rejected: %v", genchain[i].NumberU64(), err)
+	}
+}

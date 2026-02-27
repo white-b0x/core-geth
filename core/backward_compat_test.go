@@ -926,3 +926,138 @@ func TestMordorLikeChainIntegration(t *testing.T) {
 func stateNonce(gen *BlockGen, addr common.Address) uint64 {
 	return gen.TxNonce(addr)
 }
+
+// TestOlympiaReorgAcrossForkBoundary mines two competing chains that diverge
+// before the Olympia activation block. Chain A (shorter) is inserted first,
+// then chain B (longer/heavier) triggers a reorg. Verifies correct treasury
+// state and chain selection after reorg.
+func TestOlympiaReorgAcrossForkBoundary(t *testing.T) {
+	olympiaBlock := int64(5)
+	config := newOlympiaTestConfig(olympiaBlock, 5_000_000)
+
+	gspec := &genesisT.Genesis{
+		Config:     config,
+		GasLimit:   5_000_000,
+		Difficulty: vars.MinimumDifficulty,
+		BaseFee:    big.NewInt(vars.InitialBaseFee),
+		Alloc: genesisT.GenesisAlloc{
+			compatTestAddr: {Balance: new(big.Int).Mul(big.NewInt(1000), big.NewInt(1e18))},
+		},
+	}
+
+	gendbA := rawdb.NewMemoryDatabase()
+	genesisA := MustCommitGenesis(gendbA, triedb.NewDatabase(gendbA, triedb.HashDefaults), gspec)
+
+	gendbB := rawdb.NewMemoryDatabase()
+	genesisB := MustCommitGenesis(gendbB, triedb.NewDatabase(gendbB, triedb.HashDefaults), gspec)
+
+	recipient := common.Address{0xaa}
+
+	// Chain A: 8 blocks, with txs post-fork (generates treasury revenue)
+	chainA, _ := GenerateChain(gspec.Config, genesisA, ethash.NewFaker(), gendbA, 8, func(i int, gen *BlockGen) {
+		gen.SetCoinbase(compatMiner)
+		blockNum := int64(i + 1)
+		if blockNum >= olympiaBlock {
+			tx := types.MustSignNewTx(compatTestKey, gen.Signer(), &types.LegacyTx{
+				Nonce:    gen.TxNonce(compatTestAddr),
+				To:       &recipient,
+				Value:    big.NewInt(1000),
+				Gas:      vars.TxGas,
+				GasPrice: new(big.Int).Add(gen.BaseFee(), big.NewInt(2e9)),
+			})
+			gen.AddTx(tx)
+		}
+	})
+
+	// Chain B: 10 blocks (longer = more total difficulty with PoW faker),
+	// also with txs post-fork but different treasury accumulation
+	chainB, _ := GenerateChain(gspec.Config, genesisB, ethash.NewFaker(), gendbB, 10, func(i int, gen *BlockGen) {
+		gen.SetCoinbase(common.Address{0x22}) // different miner
+		blockNum := int64(i + 1)
+		if blockNum >= olympiaBlock {
+			tx := types.MustSignNewTx(compatTestKey, gen.Signer(), &types.LegacyTx{
+				Nonce:    gen.TxNonce(compatTestAddr),
+				To:       &recipient,
+				Value:    big.NewInt(2000),
+				Gas:      vars.TxGas,
+				GasPrice: new(big.Int).Add(gen.BaseFee(), big.NewInt(3e9)),
+			})
+			gen.AddTx(tx)
+		}
+	})
+
+	// Insert chain A first
+	db := rawdb.NewMemoryDatabase()
+	MustCommitGenesis(db, triedb.NewDatabase(db, triedb.HashDefaults), gspec)
+	blockchain, _ := NewBlockChain(db, nil, gspec, nil, ethash.NewFaker(), vm.Config{}, nil, nil)
+	defer blockchain.Stop()
+
+	if _, err := blockchain.InsertChain(chainA); err != nil {
+		t.Fatalf("failed to insert chain A: %v", err)
+	}
+
+	// Verify chain A state
+	stateA, err := blockchain.State()
+	if err != nil {
+		t.Fatal(err)
+	}
+	treasuryBalA := stateA.GetBalance(compatTreasury)
+	if treasuryBalA.IsZero() {
+		t.Fatal("chain A: treasury should have non-zero balance after post-fork blocks")
+	}
+	headA := blockchain.CurrentBlock().Number.Uint64()
+	if headA != 8 {
+		t.Fatalf("chain A: expected head at 8, got %d", headA)
+	}
+	t.Logf("chain A: head=%d treasury=%s", headA, treasuryBalA)
+
+	// Insert chain B (longer, triggers reorg)
+	if _, err := blockchain.InsertChain(chainB); err != nil {
+		t.Fatalf("failed to insert chain B: %v", err)
+	}
+
+	// Verify reorg happened — head should be chain B
+	headB := blockchain.CurrentBlock().Number.Uint64()
+	if headB != 10 {
+		t.Fatalf("after reorg: expected head at 10, got %d", headB)
+	}
+
+	// Calculate expected treasury from chain B (only post-fork blocks have BaseFee)
+	var expectedTreasuryB uint256.Int
+	for _, block := range chainB {
+		if block.BaseFee() == nil {
+			continue // pre-fork block, no treasury credit
+		}
+		baseFee := uint256.MustFromBig(block.BaseFee())
+		gasUsed := new(uint256.Int).SetUint64(block.GasUsed())
+		revenue := new(uint256.Int).Mul(baseFee, gasUsed)
+		expectedTreasuryB.Add(&expectedTreasuryB, revenue)
+	}
+
+	stateB, err := blockchain.State()
+	if err != nil {
+		t.Fatal(err)
+	}
+	treasuryBalB := stateB.GetBalance(compatTreasury)
+	if treasuryBalB.Cmp(&expectedTreasuryB) != 0 {
+		t.Fatalf("after reorg: treasury mismatch\n  got:  %s\n  want: %s", treasuryBalB, &expectedTreasuryB)
+	}
+
+	// Treasury should differ from chain A (different tip amounts, different block count)
+	if treasuryBalB.Cmp(treasuryBalA) == 0 {
+		t.Error("treasury balance should differ between chain A and B (different gas prices and block counts)")
+	}
+
+	// Verify chain link integrity after reorg
+	prev := blockchain.CurrentBlock()
+	for num := prev.Number.Uint64(); num > 0; num-- {
+		block := blockchain.GetBlockByNumber(num - 1)
+		current := blockchain.GetBlockByNumber(num)
+		if current.ParentHash() != block.Hash() {
+			t.Errorf("chain link broken at block %d: parent %s != prev hash %s",
+				num, current.ParentHash().Hex(), block.Hash().Hex())
+		}
+	}
+
+	t.Logf("reorg verified: head=%d treasury=%s (was %s on chain A)", headB, treasuryBalB, treasuryBalA)
+}
