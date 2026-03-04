@@ -91,7 +91,7 @@ func (bc *testBlockChain) CurrentBlock() *types.Header {
 	var (
 		blockNumber = new(big.Int).Add(new(big.Int).SetUint64(*bc.config.GetEIP1559Transition()), big.NewInt(1))
 		blockTime   = *bc.config.GetEIP4844TransitionTime() + 1
-		gasLimit    = uint64(30_000_000)
+		gasLimit    = uint64(16_777_216) // EIP-7825: 2^24
 	)
 
 	lo := new(big.Int)

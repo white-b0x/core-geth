@@ -32,7 +32,7 @@ The Olympia upgrade brings EIP-1559 dynamic fees and Cancun-equivalent EVM impro
 | 5 | aff65a65e | feat: redirect basefee to treasury (ECIP-1111) |
 | 6 | 5f79936e7 | feat: activate EIP-5656, 1153, 6780, 2537 on Mordor |
 | 7 | a0b6523f8 | feat: EIP-7883 + EIP-7823 (ModExp gas/bounds) |
-| 8 | 1eaa81f3e | feat: EIP-7825 (TX gas limit cap 30M) |
+| 8 | 1eaa81f3e | feat: EIP-7825 (TX gas limit cap 2^24) |
 | 9 | a231ce69f | feat: EIP-7623 (floor data gas cost) |
 | 10 | c3d2f95b3 | feat: EIP-7935 (default gas limit 60M) |
 | 11 | 777ea6bcc | fix: correct EIP-7883 gas formula + tests |
@@ -75,7 +75,7 @@ The Olympia upgrade brings EIP-1559 dynamic fees and Cancun-equivalent EVM impro
 | 2537 (BLS12-381) | ACTIVATED | None | Already existed, set FBlock |
 | 7883 (ModExp gas increase) | PORTED | Low | Modified `core/vm/contracts.go` bigModExp |
 | 7823 (ModExp upper bounds) | PORTED | Low | Added 1024-byte input limit to bigModExp |
-| 7825 (TX gas limit cap) | PORTED | Low | 30M cap in state_transition + txpool |
+| 7825 (TX gas limit cap) | PORTED | Low | 2^24 (16,777,216) cap in state_transition + txpool |
 | 7623 (Floor data gas) | PORTED | Medium | FloorDataGas() in state_transition + txpool |
 | 7935 (Default gas limit 60M) | PORTED | Low | Changed DefaultGasLimit in vars |
 | 7951 (secp256r1 precompile) | PORTED | Medium | New precompile at 0x100, Go stdlib P-256 |
@@ -138,7 +138,7 @@ Added to address external security review concerns:
 |------|-------|------|
 | `core/backward_compat_test.go` | +1 | Reorg across fork boundary with treasury state verification |
 | `core/eip2935_test.go` | +2 | Block hash persistence at HISTORY_STORAGE_ADDRESS, reorg updates hashes |
-| `core/txpool/validation_test.go` | +6 | EIP-7825 30M gas cap, EIP-7623 calldata pricing (Legacy, AccessList, DynamicFee, SetCode) |
+| `core/txpool/validation_test.go` | +6 | EIP-7825 2^24 gas cap, EIP-7623 calldata pricing (Legacy, AccessList, DynamicFee, SetCode) |
 | `core/treasury_test.go` | +2 | 50-block cumulative accumulation, immutable treasury address |
 | `core/eip7702_test.go` | +2 | Self-delegation, code clears after revocation via nonce bump |
 
@@ -187,7 +187,7 @@ These are the exact consensus-breaking changes that will cause pre-Olympia nodes
 - **Treasury credit** in `Finalize()`: `baseFee * gasUsed` credited to treasury after `AccumulateRewards`. Changes stateRoot.
 - **EIP-2935 system call**: `ProcessParentBlockHash` executes at start of each block, deploying history contract at fork block. Changes stateRoot.
 - **EIP-7623 floor data gas**: Transactions with insufficient gas for calldata floor rejected during execution.
-- **EIP-7825 tx gas cap**: Transactions with gas > 30M rejected during pre-checks.
+- **EIP-7825 tx gas cap**: Transactions with gas > 2^24 (16,777,216) rejected during pre-checks.
 - **EIP-7702 tx type (0x04)**: New transaction type with authorization list processing. Changes account code via delegation prefix.
 
 ### EVM
@@ -197,7 +197,7 @@ These are the exact consensus-breaking changes that will cause pre-Olympia nodes
 - **EIP-7702 delegation resolution**: CALL/STATICCALL/DELEGATECALL resolve delegation prefix codes (one level deep)
 
 ### Precompiles
-- **EIP-2537 BLS12-381**: Precompiles at 0x0a–0x12
+- **EIP-2537 BLS12-381**: 7 precompiles at 0x0b–0x11 (final spec: G1Add, G1MultiExp, G2Add, G2MultiExp, Pairing, MapG1, MapG2)
 - **EIP-7951 P256VERIFY**: Precompile at 0x100
 - **EIP-7883 ModExp**: Increased gas cost formula
 - **EIP-7823 ModExp**: 1024-byte input limit
@@ -230,6 +230,37 @@ The finalization ordering in `consensus/ethash/consensus.go:Finalize()` is deter
 
 ---
 
+## Cross-Client Verification Methodology
+
+Every EIP and ECIP in the Olympia fork is verified using a six-client cross-verification process:
+
+**Reference Clients (ETH production):**
+- [go-ethereum](https://github.com/ethereum/go-ethereum) — canonical Go implementation
+- [Erigon](https://github.com/erigontech/erigon) — optimized Go implementation
+- [Nethermind](https://github.com/NethermindEth/nethermind) — .NET implementation
+
+**ETC Clients (implementation targets):**
+- core-geth (`chris-mercer/core-geth`) — Go, forked from go-ethereum
+- Fukuii (`chris-mercer/fukuii`) — Scala/JVM, forked from Mantis
+- Besu (`chris-mercer/besu`) — Java/JVM, forked from Hyperledger Besu
+
+**Process (per EIP/ECIP):**
+1. Read the canonical EIP specification at `eips.ethereum.org`
+2. Verify implementation in all 3 ETH production clients (constants, formulas, gas costs, addresses)
+3. Verify implementation in all 3 ETC clients against both the spec and ETH implementations
+4. Cross-compare ETC clients against each other for consistency
+5. Document any discrepancies with severity (consensus-critical vs. cosmetic)
+
+**Catches from this process:**
+- **EIP-7825:** All 3 ETC clients had `MaxTxGas = 30,000,000` (from early drafts). ETH clients all use `1 << 24 = 16,777,216` per final spec. Corrected in all 3 ETC clients.
+- **EIP-7883:** Fukuii's `PostEIP7883Cost` had 3 formula bugs (wrong `multComplexity`, wrong `adjExpLen` multiplier 8→16, wrong divisor 3→1 and minimum 200→500). Caught by comparing against go-ethereum's `osakaModexpGas()`. Besu wired `PragueGasCalculator` instead of `OsakaGasCalculator` for ModExp — correct implementation exists but wasn't connected.
+- **EIP-7951:** Fukuii initially had `P256VerifyGas = 3450` (half the correct 6,900). Caught by cross-referencing core-geth.
+- **EIP-7702:** Fukuii initially had `TxAuthTupleGas = 25000` (double the correct 12,500). Caught by cross-referencing core-geth.
+
+This methodology ensures implementation parity across all ETC clients and consistency with ETH production client behavior for shared EIPs.
+
+---
+
 ## Known Risks
 
 ### Single Production Client
@@ -249,7 +280,7 @@ The P256VERIFY precompile uses Go's `crypto/elliptic` stdlib, not optimized asse
 The gas formula change may cause edge cases where previously-affordable ModExp calls become too expensive, breaking contracts that depend on specific gas costs. Existing ModExp usage on ETC is minimal, reducing practical risk.
 
 ### Gas Limit and Fee Market Dynamics
-EIP-7935 changes the default gas limit from 8M to **60M**, with an EIP-1559 target of **30M** (limit/2). This is a miner policy default — miners can still adjust it. At 60M, the network needs **1,428+ simple transfers per block** just to start pushing baseFee upward. ETC mainnet currently averages ~30,000 txs/day (~5 txs/block) — **0.2% utilization** at 60M. The `TestSecurityBudgetAnalysis` test simulates era 4 (2.048 ETC/block) and era 5 (1.6384 ETC/block) at this baseline, showing block rewards constitute 99.99% of miner income. Under congestion (2,000 txs/block, 70% utilization), tips rise to ~5% and treasury funding increases ~19×. EIP-7825's 30M per-tx gas cap remains below the block gas limit. Stress profiles are fundamentally different from Ethereum mainnet.
+EIP-7935 changes the default gas limit from 8M to **60M**, with an EIP-1559 target of **30M** (limit/2). This is a miner policy default — miners can still adjust it. At 60M, the network needs **1,428+ simple transfers per block** just to start pushing baseFee upward. ETC mainnet currently averages ~30,000 txs/day (~5 txs/block) — **0.2% utilization** at 60M. The `TestSecurityBudgetAnalysis` test simulates era 4 (2.048 ETC/block) and era 5 (1.6384 ETC/block) at this baseline, showing block rewards constitute 99.99% of miner income. Under congestion (2,000 txs/block, 70% utilization), tips rise to ~5% and treasury funding increases ~19×. EIP-7825's 2^24 (16,777,216) per-tx gas cap remains below the block gas limit. Stress profiles are fundamentally different from Ethereum mainnet.
 
 ---
 
@@ -325,7 +356,7 @@ DAO migration pattern: `transferAdminTo()` + `disablePipeline()` (tested in edge
    - Miners receive only tips for Type-2 txs
    - Legacy (Type-0) and access list (Type-1) txs unchanged
    - New opcodes functional (MCOPY, TLOAD/TSTORE, PUSH0)
-   - BLS precompiles accessible at addresses 0x0a-0x12
+   - BLS precompiles accessible at addresses 0x0b-0x11 (7 precompiles per final EIP-2537 spec)
    - P256VERIFY accessible at address 0x100
 
 ### For ETC Mainnet

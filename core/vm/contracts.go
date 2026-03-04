@@ -51,16 +51,16 @@ var basePrecompiledContracts = map[common.Address]PrecompiledContract{
 	common.BytesToAddress([]byte{4}): &dataCopy{},
 }
 
+// PrecompiledContractsBLS contains the 7 BLS12-381 precompiles at addresses 0x0b-0x11 (EIP-2537 final spec).
+// G1Mul and G2Mul were removed in the final spec — use G1MultiExp/G2MultiExp with k=1 instead.
 var PrecompiledContractsBLS = map[common.Address]PrecompiledContract{
-	common.BytesToAddress([]byte{10}): &bls12381G1Add{},
-	common.BytesToAddress([]byte{11}): &bls12381G1Mul{},
-	common.BytesToAddress([]byte{12}): &bls12381G1MultiExp{},
-	common.BytesToAddress([]byte{13}): &bls12381G2Add{},
-	common.BytesToAddress([]byte{14}): &bls12381G2Mul{},
-	common.BytesToAddress([]byte{15}): &bls12381G2MultiExp{},
-	common.BytesToAddress([]byte{16}): &bls12381Pairing{},
-	common.BytesToAddress([]byte{17}): &bls12381MapG1{},
-	common.BytesToAddress([]byte{18}): &bls12381MapG2{},
+	common.BytesToAddress([]byte{0x0b}): &bls12381G1Add{},
+	common.BytesToAddress([]byte{0x0c}): &bls12381G1MultiExp{},
+	common.BytesToAddress([]byte{0x0d}): &bls12381G2Add{},
+	common.BytesToAddress([]byte{0x0e}): &bls12381G2MultiExp{},
+	common.BytesToAddress([]byte{0x0f}): &bls12381Pairing{},
+	common.BytesToAddress([]byte{0x10}): &bls12381MapG1{},
+	common.BytesToAddress([]byte{0x11}): &bls12381MapG2{},
 }
 
 func mergeContracts(base, target map[common.Address]PrecompiledContract) {
@@ -104,7 +104,7 @@ func PrecompiledContractsForConfig(config ctypes.ChainConfigurator, bn *big.Int,
 		precompileds[common.BytesToAddress([]byte{9})] = &blake2F{}
 	}
 	if config.IsEnabled(config.GetEIP2537Transition, bn) {
-		// 10-18 are BLS12-381 precompiles
+		// 0x0b-0x11 are BLS12-381 precompiles (EIP-2537 final: 7 precompiles)
 		mergeContracts(precompileds, PrecompiledContractsBLS)
 	}
 	if config.IsEnabledByTime(config.GetEIP4844TransitionTime, bt) || config.IsEnabled(config.GetEIP4844Transition, bn) {
@@ -734,10 +734,10 @@ func (c *bls12381G1MultiExp) RequiredGas(input []byte) uint64 {
 	}
 	// Lookup discount value for G1 point, scalar value pair length
 	var discount uint64
-	if dLen := len(vars.Bls12381MultiExpDiscountTable); k < dLen {
-		discount = vars.Bls12381MultiExpDiscountTable[k-1]
+	if dLen := len(vars.Bls12381G1MultiExpDiscountTable); k < dLen {
+		discount = vars.Bls12381G1MultiExpDiscountTable[k-1]
 	} else {
-		discount = vars.Bls12381MultiExpDiscountTable[dLen-1]
+		discount = vars.Bls12381G1MultiExpDiscountTable[dLen-1]
 	}
 	// Calculate gas and return the result
 	return (uint64(k) * vars.Bls12381G1MulGas * discount) / 1000
@@ -865,10 +865,10 @@ func (c *bls12381G2MultiExp) RequiredGas(input []byte) uint64 {
 	}
 	// Lookup discount value for G2 point, scalar value pair length
 	var discount uint64
-	if dLen := len(vars.Bls12381MultiExpDiscountTable); k < dLen {
-		discount = vars.Bls12381MultiExpDiscountTable[k-1]
+	if dLen := len(vars.Bls12381G2MultiExpDiscountTable); k < dLen {
+		discount = vars.Bls12381G2MultiExpDiscountTable[k-1]
 	} else {
-		discount = vars.Bls12381MultiExpDiscountTable[dLen-1]
+		discount = vars.Bls12381G2MultiExpDiscountTable[dLen-1]
 	}
 	// Calculate gas and return the result
 	return (uint64(k) * vars.Bls12381G2MulGas * discount) / 1000

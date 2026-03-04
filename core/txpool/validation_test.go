@@ -107,7 +107,7 @@ func TestEIP7825GasCapRejectsOverLimit(t *testing.T) {
 }
 
 // TestEIP7825GasCapAllowsAtLimit verifies that transactions with gas exactly
-// at or below 30M are accepted when EIP-7825 is active.
+// at or below 2^24 (16,777,216) are accepted when EIP-7825 is active.
 func TestEIP7825GasCapAllowsAtLimit(t *testing.T) {
 	config := newValidationConfig(big.NewInt(0))
 	signer := types.MakeSigner(config, big.NewInt(0), 0)
@@ -118,7 +118,7 @@ func TestEIP7825GasCapAllowsAtLimit(t *testing.T) {
 		Nonce:    0,
 		To:       &common.Address{0x01},
 		Value:    big.NewInt(0),
-		Gas:      vars.MaxTxGas, // exactly 30_000_000
+		Gas:      vars.MaxTxGas, // exactly 2^24 = 16,777,216
 		GasPrice: big.NewInt(1e10),
 	})
 
@@ -128,7 +128,7 @@ func TestEIP7825GasCapAllowsAtLimit(t *testing.T) {
 	}
 }
 
-// TestEIP7825GasCapInactivePreFork verifies that transactions with gas > 30M
+// TestEIP7825GasCapInactivePreFork verifies that transactions with gas > 2^24
 // are accepted when EIP-7825 is NOT active.
 func TestEIP7825GasCapInactivePreFork(t *testing.T) {
 	config := newValidationConfig(nil) // no fork
