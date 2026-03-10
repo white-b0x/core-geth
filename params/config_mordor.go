@@ -118,11 +118,7 @@ var (
 		ECBP1100FBlock:           big.NewInt(2380000),    // ETA 29 Sept 2020, ~1500 UTC
 		ECBP1100DeactivateFBlock: big.NewInt(10_400_000), // ETA 13 January 2024
 
-		// ECIP-1112: Olympia treasury vault (deployed via CREATE2)
-		OlympiaTreasuryAddress: func() *common.Address {
-			a := common.HexToAddress("0xCfE1e0ECbff745e6c800fF980178a8dDEf94bEe2")
-			return &a
-		}(),
+		OlympiaTreasuryAddress: &OlympiaTreasuryAddr, // ECIP-1112 (see olympia_treasury.go)
 
 		RequireBlockHashes: map[uint64]common.Hash{
 			840013: common.HexToHash("0x2ceada2b191879b71a5bcf2241dd9bc50d6d953f1640e62f9c2cee941dc61c9d"),

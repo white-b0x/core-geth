@@ -13,7 +13,7 @@ The Olympia upgrade brings EIP-1559 dynamic fees and Cancun-equivalent EVM impro
 
 **Three ECIPs implemented:**
 - **ECIP-1111** — EIP-1559 + EIP-3198 with basefee redirected to treasury
-- **ECIP-1112** — Immutable treasury vault (OZ AccessControl, deployed via CREATE2)
+- **ECIP-1112** — Immutable treasury vault (demo v0.2: pure Solidity, deployed via CREATE)
 - **ECIP-1121** — 13 execution-layer EIPs aligned with Ethereum (PoW-compatible subset)
 
 **Mordor activation:** Block **15,800,850** (~March 28, 2026)
@@ -286,35 +286,31 @@ EIP-7935 changes the default gas limit from 8M to **60M**, with an EIP-1559 targ
 
 ## Treasury Contract (ECIP-1112)
 
-**Repo:** `github.com/olympiadao/olympia-treasury-contract`
-**Contract:** `OlympiaTreasury.sol` — OZ AccessControl v5.6.0, Solidity 0.8.28
+> **Demo v0.2** — Pre-Olympia EVM (Shanghai). Pure Solidity, no OpenZeppelin dependency. Deployed on Mordor + ETC mainnet. Not production.
 
-**Mordor deployment:**
-- Address: `0xCfE1e0ECbff745e6c800fF980178a8dDEf94bEe2`
-- Admin: `0x3b0952fB8eAAC74E56E176102eBA70BAB1C81537`
-- Deployed via CREATE2 (salt: `keccak256("OLYMPIA_TREASURY_V1")`)
+**Repo:** `github.com/olympiadao/olympia-treasury-contract` (branch `demo_v0.2`)
+**Contract:** `OlympiaTreasury.sol` — Pure Solidity 0.8.28, immutable executor pattern
 
-**Roles:**
-- `DEFAULT_ADMIN_ROLE` — can grant/revoke roles
-- `WITHDRAWER_ROLE` — can call `withdraw(to, amount)`
+**Deployment (Mordor 63 + ETC mainnet 61, identical addresses):**
+- Treasury: `0x035b2e3c189B772e52F4C3DA6c45c84A3bB871bf` (CREATE, nonce-based)
+- Executor: `0x64624f74F77639CbA268a6c8bEDC2778B707eF9a` (CREATE2, deterministic factory)
+- Deployer: `0x7C3311F29e318617fed0833E68D6522948AaE995`
 
-**Immutability guarantee:** The treasury contract has no mint function. It can only receive baseFee revenue credited by consensus (`Finalize()` in the ethash engine). The admin can only withdraw accumulated funds via `withdraw(to, amount)`, not create new ETC. The total ETC in the treasury is always ≤ the sum of `baseFee * gasUsed` across all post-Olympia blocks.
+**Architecture:**
+- `immutable executor` — single authorized caller, pre-computed CREATE2 address
+- `withdraw(to, amount)` — executor only, no admin roles, no upgrade path
+- `receive()` — accepts ETC (baseFee revenue credited by consensus)
 
-**Staged governance plan** (demonstrated in `test/StagedEvolution.t.sol`):
-1. Stage 1 (ECIP-1111 + 1112): coreMultisig bootstraps treasury, accumulates baseFee
-2. Stage 2 (+ ECIP-1113): coreMultisig transfers DEFAULT_ADMIN_ROLE to CoreDAO for non-contentious infra funding
-3. Stage 3 (+ ECIP-1117): CoreDAO enables FutarchyDAO for contentious ecosystem proposals (coexist)
-4. Stage 4 (+ ECIP-1115): CoreDAO enables LCurveDistributor for predictable miner incentives
+**Immutability guarantee:** The treasury contract has no mint function. It can only receive baseFee revenue credited by consensus (`Finalize()` in the ethash engine). The executor can only withdraw accumulated funds via `withdraw(to, amount)`, not create new ETC. The total ETC in the treasury is always ≤ the sum of `baseFee * gasUsed` across all post-Olympia blocks.
 
-Authorization chain: coreMultisig → CoreDAO → {FutarchyDAO, LCurveDistributor}
-DAO migration pattern: `transferAdminTo()` + `disablePipeline()` (tested in edge case)
+**Governance contracts** (separate repo: `olympia-governance-contracts`, branch `demo_v0.2`):
+- OZ 5.1.0 (required: Shanghai EVM has no `mcopy`, OZ 5.2+ requires Cancun)
+- Governor → Timelock → Executor → Treasury pipeline
+- 3-layer sanctions defense (ECIP-1119)
 
-**Mock contracts** (`test/mocks/`):
-- `MockCoreDAO.sol` — ECIP-1113: `fundCoreInfra()`, `enablePipeline()`, `disablePipeline()`, `transferAdminTo()`
-- `MockFutarchyDAO.sol` — ECIP-1117: `executeProposal()`
-- `MockLCurveDistributor.sol` — ECIP-1115: `distribute()` with logarithmic weighting
+**Production note:** Post-Olympia deployment will use OZ 5.6 contracts targeting Cancun EVM. Different bytecode → different CREATE2 addresses for Executor. Treasury CREATE address also changes (different deployer/nonce). Production addresses TBD.
 
-**Tests:** 16 passing (10 unit tests + 6 staged evolution tests)
+**Tests:** 33 passing (15 unit + 12 security + 6 pre-governance)
 
 ---
 
@@ -363,8 +359,8 @@ DAO migration pattern: `transferAdminTo()` + `disablePipeline()` (tested in edge
 
 1. Confirm Mordor soak successful (no consensus failures, no crashes)
 2. Set mainnet activation block in `params/config_classic.go` (target: ~24,751,337)
-3. Deploy treasury contract to ETC mainnet via CREATE2 (same salt → deterministic address)
-4. Update mainnet treasury address
+3. Deploy production treasury contract to ETC mainnet (OZ 5.6, post-Olympia Cancun EVM)
+4. Update mainnet treasury address to production deployment
 5. Release core-geth v1.13.0
 6. Coordinate community upgrade timeline
 

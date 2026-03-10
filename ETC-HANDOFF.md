@@ -93,6 +93,8 @@ EIP-7642 (eth/69 — removes TD from the `Status` handshake message) is delibera
 
 See the `olympia` branch for Olympia-specific implementation details, treasury address, and activation timeline.
 
+Treasury v0.2: `0x035b2e3c189B772e52F4C3DA6c45c84A3bB871bf` (pure Solidity, CREATE, Mordor + ETC). Production deployment (OZ 5.6, post-Olympia) will use a different address — to be coordinated with the core development team before mainnet activation.
+
 ## How to Run
 
 ```bash

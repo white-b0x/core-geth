@@ -1,11 +1,11 @@
 # Core-Geth — Ethereum Classic Execution Client
 
 **Status:** Production — syncing Mordor testnet, ETC mainnet capable
-**Language:** Go 1.24
+**Language:** Go 1.26
 **Build:** Makefile + build/ci.go orchestration
 **License:** LGPL-3.0
-**Origin:** Fork of etclabscore/core-geth (itself a go-ethereum fork)
-**Branch:** `etc` (pre-Olympia stabilization), `olympia` (hard fork implementation)
+**Origin:** Fork of ethereumclassic/core-geth (itself a go-ethereum fork)
+**Branch:** `pre-olympia` (Go 1.26, March 2026 LTS, ECIP-1066 compliant), `olympia` (hard fork implementation)
 
 ---
 
@@ -91,7 +91,7 @@ crypto/                 # Cryptographic primitives
 | `core/vm/contracts.go` | Precompile registry |
 | `core/vm/opcodes.go` | EVM opcode definitions |
 | `internal/build/gotool.go` | CGO_CFLAGS, build flags (blst -std=gnu11 fix here) |
-| `Dockerfile` | Multi-stage Docker build (golang:1.24-alpine) |
+| `Dockerfile` | Multi-stage Docker build (golang:1.26-alpine) |
 
 ---
 
@@ -105,7 +105,7 @@ docker build -t coregeth-etc:local -f Dockerfile .
 docker run --rm coregeth-etc:local version
 ```
 
-Multi-stage: `golang:1.24-alpine` builder + `alpine:latest` runtime. Static binary via `build/ci.go install -static`.
+Multi-stage: `golang:1.26-alpine` builder + `alpine:latest` runtime. Static binary via `build/ci.go install -static`.
 
 **Note:** `gotool.go:58` hardcodes `CGO_CFLAGS=-O2 -g -D__BLST_PORTABLE__ -std=gnu11`. This overrides any Docker ENV CGO_CFLAGS.
 
