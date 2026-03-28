@@ -25,7 +25,7 @@ const (
 	VersionMinor = 13         // Minor version component of the current release
 	VersionPatch = 0          // Patch version component of the current release
 	VersionMeta  = "unstable" // Version metadata to append to the version string
-	VersionName  = "core-geth-v1.13.0"
+	VersionName  = "Core-Geth-v1.13.0"
 )
 
 // Version holds the textual version string.

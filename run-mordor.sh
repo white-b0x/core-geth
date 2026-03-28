@@ -4,6 +4,7 @@
 
 exec geth \
   --mordor \
+  --identity "Mordor Testnet" \
   --datadir=/media/dev/2tb/data/blockchain/core-geth/mordor \
   --http \
   --http.addr=0.0.0.0 \

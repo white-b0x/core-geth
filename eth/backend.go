@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"runtime"
 	"sync"
 
 	"github.com/ethereum/go-ethereum/accounts"
@@ -60,7 +59,6 @@ import (
 	"github.com/ethereum/go-ethereum/params/types/ctypes"
 	"github.com/ethereum/go-ethereum/params/types/goethereum"
 	"github.com/ethereum/go-ethereum/params/vars"
-	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -340,12 +338,7 @@ func New(stack *node.Node, config *ethconfig.Config) (*Ethereum, error) {
 func makeExtraData(extra []byte) []byte {
 	if len(extra) == 0 {
 		// create default extradata
-		extra, _ = rlp.EncodeToBytes([]interface{}{
-			uint(params.VersionMajor<<16 | params.VersionMinor<<8 | params.VersionPatch),
-			"CoreGeth",
-			runtime.Version(),
-			runtime.GOOS,
-		})
+		extra = []byte("Core-Geth-v1.13.0")
 	}
 	if uint64(len(extra)) > vars.MaximumExtraDataSize {
 		log.Warn("Miner extra data exceed limit", "extra", hexutil.Bytes(extra), "limit", vars.MaximumExtraDataSize)

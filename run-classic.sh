@@ -4,6 +4,7 @@
 
 exec ./build/bin/geth \
   --classic \
+  --identity "Ethereum Classic" \
   --datadir=/media/dev/2tb/data/blockchain/core-geth/classic \
   --http \
   --http.addr=0.0.0.0 \
