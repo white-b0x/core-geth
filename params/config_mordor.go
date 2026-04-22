@@ -89,26 +89,27 @@ var (
 		EIP6049FBlock: big.NewInt(9_957_000), // Deprecate SELFDESTRUCT (noop)
 
 		// Olympia (ECIP-1111: EIP-1559 + basefee treasury redirect)
-		EIP1559FBlock: big.NewInt(15_800_850), // EIP-1559 dynamic base fee
-		EIP3198FBlock: big.NewInt(15_800_850), // BASEFEE opcode
+		// Not yet scheduled — far-future sentinel matching fukuii upstream/develop noFork value
+		EIP1559FBlock: big.NewInt(1_000_000_000_000_000_000), // EIP-1559 dynamic base fee
+		EIP3198FBlock: big.NewInt(1_000_000_000_000_000_000), // BASEFEE opcode
 
 		// Olympia (ECIP-1121: Cancun-equivalent EIPs)
-		EIP5656FBlock: big.NewInt(15_800_850), // MCOPY instruction
-		EIP1153FBlock: big.NewInt(15_800_850), // Transient storage (TLOAD/TSTORE)
-		EIP6780FBlock: big.NewInt(15_800_850), // SELFDESTRUCT only in same tx
-		EIP2537FBlock: big.NewInt(15_800_850), // BLS12-381 precompiles
+		EIP5656FBlock: big.NewInt(1_000_000_000_000_000_000), // MCOPY instruction
+		EIP1153FBlock: big.NewInt(1_000_000_000_000_000_000), // Transient storage (TLOAD/TSTORE)
+		EIP6780FBlock: big.NewInt(1_000_000_000_000_000_000), // SELFDESTRUCT only in same tx
+		EIP2537FBlock: big.NewInt(1_000_000_000_000_000_000), // BLS12-381 precompiles
 
 		// Olympia (ECIP-1121: Gas/limits EIPs)
-		EIP7823FBlock: big.NewInt(15_800_850), // MODEXP upper bounds (1024 bytes)
-		EIP7883FBlock: big.NewInt(15_800_850), // MODEXP gas cost increase
-		EIP7825FBlock: big.NewInt(15_800_850), // TX gas limit cap (30M)
-		EIP7623FBlock: big.NewInt(15_800_850), // Floor data gas cost
+		EIP7823FBlock: big.NewInt(1_000_000_000_000_000_000), // MODEXP upper bounds (1024 bytes)
+		EIP7883FBlock: big.NewInt(1_000_000_000_000_000_000), // MODEXP gas cost increase
+		EIP7825FBlock: big.NewInt(1_000_000_000_000_000_000), // TX gas limit cap (30M)
+		EIP7623FBlock: big.NewInt(1_000_000_000_000_000_000), // Floor data gas cost
 
 		// Olympia (ECIP-1121: EVM EIPs)
-		EIP7951FBlock: big.NewInt(15_800_850), // secp256r1 P256VERIFY precompile
-		EIP2935FBlock: big.NewInt(15_800_850), // Historical block hashes from state
-		EIP7702FBlock: big.NewInt(15_800_850), // Set EOA account code
-		EIP7934FBlock: big.NewInt(15_800_850), // RLP execution block size limit
+		EIP7951FBlock: big.NewInt(1_000_000_000_000_000_000), // secp256r1 P256VERIFY precompile
+		EIP2935FBlock: big.NewInt(1_000_000_000_000_000_000), // Historical block hashes from state
+		EIP7702FBlock: big.NewInt(1_000_000_000_000_000_000), // Set EOA account code
+		EIP7934FBlock: big.NewInt(1_000_000_000_000_000_000), // RLP execution block size limit
 
 		DisposalBlock:            big.NewInt(0),
 		ECIP1017FBlock:           big.NewInt(0),

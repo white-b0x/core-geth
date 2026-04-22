@@ -104,8 +104,23 @@ var (
 		// EIP4895FBlock: nil, // Beacon chain push withdrawals as operations
 		EIP6049FBlock: big.NewInt(19_250_000), // Deprecate SELFDESTRUCT (noop)
 
-		// Activation block TBD — treasury address pre-registered for deterministic deployment
-		OlympiaTreasuryAddress: &OlympiaTreasuryAddr, // ECIP-1112 (see olympia_treasury.go)
+		// Olympia (ECIP-1111/1112/1121) — not yet scheduled
+		// Far-future sentinel matching fukuii upstream/develop noFork value (1e18)
+		EIP1559FBlock: big.NewInt(1_000_000_000_000_000_000), // EIP-1559 dynamic base fee
+		EIP3198FBlock: big.NewInt(1_000_000_000_000_000_000), // BASEFEE opcode
+		EIP5656FBlock: big.NewInt(1_000_000_000_000_000_000), // MCOPY instruction
+		EIP1153FBlock: big.NewInt(1_000_000_000_000_000_000), // Transient storage (TLOAD/TSTORE)
+		EIP6780FBlock: big.NewInt(1_000_000_000_000_000_000), // SELFDESTRUCT only in same tx
+		EIP2537FBlock: big.NewInt(1_000_000_000_000_000_000), // BLS12-381 precompiles
+		EIP7823FBlock: big.NewInt(1_000_000_000_000_000_000), // MODEXP upper bounds (1024 bytes)
+		EIP7883FBlock: big.NewInt(1_000_000_000_000_000_000), // MODEXP gas cost increase
+		EIP7825FBlock: big.NewInt(1_000_000_000_000_000_000), // TX gas limit cap (30M)
+		EIP7623FBlock: big.NewInt(1_000_000_000_000_000_000), // Floor data gas cost
+		EIP7951FBlock: big.NewInt(1_000_000_000_000_000_000), // secp256r1 P256VERIFY precompile
+		EIP2935FBlock: big.NewInt(1_000_000_000_000_000_000), // Historical block hashes from state
+		EIP7702FBlock: big.NewInt(1_000_000_000_000_000_000), // Set EOA account code
+		EIP7934FBlock: big.NewInt(1_000_000_000_000_000_000), // RLP execution block size limit
+		OlympiaTreasuryAddress: &OlympiaTreasuryAddr,          // ECIP-1112 (see olympia_treasury.go)
 
 		RequireBlockHashes: map[uint64]common.Hash{
 			1920000: common.HexToHash("0x94365e3a8c0b35089c1d1195081fe7489b528a84b22199c916180db8b28ade7f"),
