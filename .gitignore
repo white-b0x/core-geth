@@ -71,10 +71,16 @@ les/transactions.rlp
 credentials.json
 keystore/
 
-# Claude internal files
-.claude/SESSION_NOTES.md
-.claude/reports/
-.claude/debug.log
+# Local working directory (run scripts, planning docs, session notes, backlogs, test reports)
+local/
+.local/
+
+# Claude / AI development tools
+.claude/
+
+# Planning & internal docs
 SESSION_NOTES.md
 PLANNING.md
 SCRATCH.md
+*.scratch.*
+*.draft.*

@@ -2196,7 +2196,10 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 		cfg.Genesis = params.DefaultSepoliaGenesisBlock()
 		SetDNSDiscoveryDefaults(cfg, params.SepoliaGenesisHash)
 	case ctx.Bool(ClassicFlag.Name):
-		SetDNSDiscoveryDefaults2(cfg, params.ClassicDNSNetwork1)
+		if cfg.EthDiscoveryURLs == nil {
+			cfg.EthDiscoveryURLs = []string{params.ClassicDNSNetwork1, params.ClassicDNSNetwork2}
+			cfg.SnapDiscoveryURLs = cfg.EthDiscoveryURLs
+		}
 	case ctx.Bool(MordorFlag.Name):
 		SetDNSDiscoveryDefaults2(cfg, params.MordorDNSNetwork1)
 	default:
