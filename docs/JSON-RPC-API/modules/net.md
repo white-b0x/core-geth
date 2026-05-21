@@ -72,7 +72,7 @@ func (s *NetAPI) Listening() bool {
 }// Listening returns an indication if the node is listening for network connections.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L2313" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L2313" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -162,7 +162,7 @@ func (s *NetAPI) PeerCount() hexutil.Uint {
 }// PeerCount returns the number of connected peers
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L2317" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L2317" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -227,7 +227,7 @@ func (s *NetAPI) Version() string {
 }// Version returns the current ethereum protocol version.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L2322" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L2322" target="_">View on GitHub →</a>
 </p>
 </details>
 

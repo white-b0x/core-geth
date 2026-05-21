@@ -173,7 +173,7 @@ func (s *PersonalAccountAPI) DeriveAccount(url string, path string, pin *bool) (
 // it for later reuse.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L344" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L344" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -362,7 +362,7 @@ func (s *PersonalAccountAPI) EcRecover(ctx context.Context, data, sig hexutil.By
 // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_ecRecover
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L549" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L549" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -483,7 +483,7 @@ func (s *PersonalAccountAPI) ImportRawKey(privkey string, password string) (comm
 // encrypting it with the passphrase.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L386" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L386" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -577,7 +577,7 @@ func (s *PersonalAccountAPI) InitializeWallet(ctx context.Context, url string) (
 	}
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L566" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L566" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -678,7 +678,7 @@ func (s *PersonalAccountAPI) ListAccounts() [ // ListAccounts will return a list
 	return s.am.Accounts()
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L294" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L294" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -858,7 +858,7 @@ func (s *PersonalAccountAPI) ListWallets() [ // ListWallets will return a list o
 	return wallets
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L308" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L308" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -962,7 +962,7 @@ func (s *PersonalAccountAPI) LockAccount(addr common.Address) bool {
 }// LockAccount will lock the account associated with the given address when it's unlocked.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L431" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L431" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1091,7 +1091,7 @@ func (s *PersonalAccountAPI) NewAccount(password string) (common.AddressEIP55, e
 }// NewAccount will create a new account and returns the address for the new account.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L360" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L360" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1182,7 +1182,7 @@ func (s *PersonalAccountAPI) OpenWallet(url string, passphrase *string) error {
 // Trezor PIN matrix challenge).
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L330" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L330" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1486,7 +1486,7 @@ func (s *PersonalAccountAPI) SendTransaction(ctx context.Context, args Transacti
 // passwd isn't able to decrypt the key it fails.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L461" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L461" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1682,7 +1682,7 @@ func (s *PersonalAccountAPI) Sign(ctx context.Context, data hexutil.Bytes, addr 
 // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L521" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L521" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -2022,7 +2022,7 @@ func (s *PersonalAccountAPI) SignTransaction(ctx context.Context, args Transacti
 // to other nodes
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L480" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L480" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -2190,7 +2190,7 @@ func (s *PersonalAccountAPI) UnlockAccount(ctx context.Context, addr common.Addr
 // default of 300 seconds. It returns an indication if the account was unlocked.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L402" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L402" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -2276,7 +2276,7 @@ func (s *PersonalAccountAPI) Unpair(ctx context.Context, url string, pin string)
 	}
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L593" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L593" target="_">View on GitHub →</a>
 </p>
 </details>
 

@@ -436,6 +436,15 @@ func (c *CoreGethChainConfig) SetECBP1100DeactivateTransition(n *uint64) error {
 	return nil
 }
 
+func (c *CoreGethChainConfig) GetECBP1100ReactivateTransition() *uint64 {
+	return bigNewU64(c.ECBP1100ReactivateFBlock)
+}
+
+func (c *CoreGethChainConfig) SetECBP1100ReactivateTransition(n *uint64) error {
+	c.ECBP1100ReactivateFBlock = setBig(c.ECBP1100ReactivateFBlock, n)
+	return nil
+}
+
 func (c *CoreGethChainConfig) GetOlympiaTreasuryAddress() *common.Address {
 	return c.OlympiaTreasuryAddress
 }
@@ -866,7 +875,13 @@ func (c *CoreGethChainConfig) IsEnabled(fn func() *uint64, n *big.Int) bool {
 	if strings.Contains(fnName, "ECBP1100Transition") {
 		deactivateTransition := c.GetECBP1100DeactivateTransition()
 		if deactivateTransition != nil {
-			return big.NewInt(int64(*deactivateTransition)).Cmp(n) > 0 && big.NewInt(int64(*f)).Cmp(n) <= 0
+			activated := big.NewInt(int64(*f)).Cmp(n) <= 0
+			deactivated := big.NewInt(int64(*deactivateTransition)).Cmp(n) <= 0
+			if deactivated {
+				reactivateTransition := c.GetECBP1100ReactivateTransition()
+				return reactivateTransition != nil && big.NewInt(int64(*reactivateTransition)).Cmp(n) <= 0
+			}
+			return activated
 		}
 	}
 	return big.NewInt(int64(*f)).Cmp(n) <= 0

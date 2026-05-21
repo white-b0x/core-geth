@@ -27,6 +27,10 @@ import (
 	"github.com/holiman/uint256"
 )
 
+// olympiaMainnetBlock is the ETC mainnet Olympia activation block (not yet scheduled).
+// Update this single constant when the real block is chosen; all Olympia EIP fields reference it.
+const olympiaMainnetBlock int64 = 1_000_000_000_000_000_000
+
 var (
 	// ClassicChainConfig is the chain parameters to run a node on the Classic main network.
 	ClassicChainConfig = &coregeth.CoreGethChainConfig{
@@ -82,8 +86,9 @@ var (
 		EIP2028FBlock: big.NewInt(10_500_839),
 		EIP2200FBlock: big.NewInt(10_500_839), // RePetersburg (=~ re-1283)
 
-		ECBP1100FBlock:           big.NewInt(11_380_000), // ETA 09 Oct 2020
-		ECBP1100DeactivateFBlock: big.NewInt(19_250_000), // ETA 31 Jan 2023 (== Spiral hard fork)
+		ECBP1100FBlock:           big.NewInt(11_380_000),            // ETA 09 Oct 2020
+		ECBP1100DeactivateFBlock: big.NewInt(19_250_000),            // ETA 31 Jan 2023 (== Spiral hard fork)
+		ECBP1100ReactivateFBlock: big.NewInt(olympiaMainnetBlock),   // Olympia reactivates MESS
 		ECIP1099FBlock:           big.NewInt(11_700_000), // Etchash (DAG size limit)
 
 		// Berlin eq, aka Magneto
@@ -104,23 +109,22 @@ var (
 		// EIP4895FBlock: nil, // Beacon chain push withdrawals as operations
 		EIP6049FBlock: big.NewInt(19_250_000), // Deprecate SELFDESTRUCT (noop)
 
-		// Olympia (ECIP-1111/1112/1121) — not yet scheduled
-		// Far-future sentinel matching fukuii upstream/develop noFork value (1e18)
-		EIP1559FBlock: big.NewInt(1_000_000_000_000_000_000), // EIP-1559 dynamic base fee
-		EIP3198FBlock: big.NewInt(1_000_000_000_000_000_000), // BASEFEE opcode
-		EIP5656FBlock: big.NewInt(1_000_000_000_000_000_000), // MCOPY instruction
-		EIP1153FBlock: big.NewInt(1_000_000_000_000_000_000), // Transient storage (TLOAD/TSTORE)
-		EIP6780FBlock: big.NewInt(1_000_000_000_000_000_000), // SELFDESTRUCT only in same tx
-		EIP2537FBlock: big.NewInt(1_000_000_000_000_000_000), // BLS12-381 precompiles
-		EIP7823FBlock: big.NewInt(1_000_000_000_000_000_000), // MODEXP upper bounds (1024 bytes)
-		EIP7883FBlock: big.NewInt(1_000_000_000_000_000_000), // MODEXP gas cost increase
-		EIP7825FBlock: big.NewInt(1_000_000_000_000_000_000), // TX gas limit cap (30M)
-		EIP7623FBlock: big.NewInt(1_000_000_000_000_000_000), // Floor data gas cost
-		EIP7951FBlock: big.NewInt(1_000_000_000_000_000_000), // secp256r1 P256VERIFY precompile
-		EIP2935FBlock: big.NewInt(1_000_000_000_000_000_000), // Historical block hashes from state
-		EIP7702FBlock: big.NewInt(1_000_000_000_000_000_000), // Set EOA account code
-		EIP7934FBlock: big.NewInt(1_000_000_000_000_000_000), // RLP execution block size limit
-		OlympiaTreasuryAddress: &OlympiaTreasuryAddr,          // ECIP-1112 (see olympia_treasury.go)
+		// Olympia (ECIP-1111/1112/1121) — not yet scheduled; update olympiaMainnetBlock to activate
+		EIP1559FBlock: big.NewInt(olympiaMainnetBlock), // EIP-1559 dynamic base fee
+		EIP3198FBlock: big.NewInt(olympiaMainnetBlock), // BASEFEE opcode
+		EIP5656FBlock: big.NewInt(olympiaMainnetBlock), // MCOPY instruction
+		EIP1153FBlock: big.NewInt(olympiaMainnetBlock), // Transient storage (TLOAD/TSTORE)
+		EIP6780FBlock: big.NewInt(olympiaMainnetBlock), // SELFDESTRUCT only in same tx
+		EIP2537FBlock: big.NewInt(olympiaMainnetBlock), // BLS12-381 precompiles
+		EIP7823FBlock: big.NewInt(olympiaMainnetBlock), // MODEXP upper bounds (1024 bytes)
+		EIP7883FBlock: big.NewInt(olympiaMainnetBlock), // MODEXP gas cost increase
+		EIP7825FBlock: big.NewInt(olympiaMainnetBlock), // TX gas limit cap (30M)
+		EIP7623FBlock: big.NewInt(olympiaMainnetBlock), // Floor data gas cost
+		EIP7951FBlock: big.NewInt(olympiaMainnetBlock), // secp256r1 P256VERIFY precompile
+		EIP2935FBlock: big.NewInt(olympiaMainnetBlock), // Historical block hashes from state
+		EIP7702FBlock: big.NewInt(olympiaMainnetBlock), // Set EOA account code
+		EIP7934FBlock: big.NewInt(olympiaMainnetBlock), // RLP execution block size limit
+		OlympiaTreasuryAddress: &OlympiaTreasuryAddr,   // ECIP-1112 (see olympia_treasury.go)
 
 		RequireBlockHashes: map[uint64]common.Hash{
 			1920000: common.HexToHash("0x94365e3a8c0b35089c1d1195081fe7489b528a84b22199c916180db8b28ade7f"),

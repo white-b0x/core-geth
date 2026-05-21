@@ -324,7 +324,7 @@ func (api *TraceAPI) Block(ctx context.Context, number rpc.BlockNumber, config *
 	return results, nil
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/tracers/api_parity.go#L190" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/tracers/api_parity.go#L190" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -897,7 +897,7 @@ func (api *TraceAPI) Call(ctx context.Context, args ethapi.TransactionArgs, bloc
 // You can provide -2 as a block number to trace on top of the pending block.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/tracers/api_parity.go#L262" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/tracers/api_parity.go#L262" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1477,7 +1477,7 @@ func (api *TraceAPI) CallMany(ctx context.Context, txs [ // CallMany lets you tr
 	return api.debugAPI.TraceCallMany(ctx, txs, blockNrOrHash, config)
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/tracers/api_parity.go#L275" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/tracers/api_parity.go#L275" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1778,7 +1778,7 @@ func (api *TraceAPI) Filter(ctx context.Context, args TraceFilterArgs, config *T
 // per transaction, dependent on the requested tracer.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/tracers/api_parity.go#L249" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/tracers/api_parity.go#L249" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1910,7 +1910,7 @@ func (sub *RPCTraceSubscription) Subscribe(subscriptionName RPCTraceSubscription
 // Subscriptions are not available over HTTP; they are only available over WS, IPC, and Process connections.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/openrpc.go#L267" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/openrpc.go#L267" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -2133,7 +2133,7 @@ func (api *TraceAPI) Transaction(ctx context.Context, hash common.Hash, config *
 // and returns them as a JSON object.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/tracers/api_parity.go#L241" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/tracers/api_parity.go#L241" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -2224,7 +2224,7 @@ func (sub *RPCTraceSubscription) Unsubscribe(id rpc.ID) error {
 }// Unsubscribe terminates an existing subscription by ID.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/openrpc.go#L258" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/openrpc.go#L258" target="_">View on GitHub →</a>
 </p>
 </details>
 

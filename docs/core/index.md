@@ -31,7 +31,7 @@ description of _all_ available methods, their parameters, and results.
 
 - Available `trace_block` and `trace_transaction` RPC API congruent to the OpenEthereum API (including a 1000x performance improvement vs. go-ethereum's `trace_transaction` in some cases).
     + _TODO:_ Talk more about this! And examples!
-- Added `debug_removePendingTransaction` API method ([#203](https://github.com/etclabscore/core-geth/pull/203/files))
+- Added `debug_removePendingTransaction` API method ([#203](https://github.com/ethereumclassic/core-geth/pull/203/files))
 - Comprehensive service discovery with OpenRPC through method `rpc.discover`.
 
 ### EVMCv7 Support
@@ -60,7 +60,7 @@ description of _all_ available methods, their parameters, and results.
 
 ### Risk Management
 
-- [Public](https://ci.etccore.in/blue/organizations/jenkins/core-geth-regression/activity) chaindata [regression testing](https://github.com/etclabscore/core-geth/blob/master/Jenkinsfile) run at each push to `master`.
+- [Public](https://ci.etccore.in/blue/organizations/jenkins/core-geth-regression/activity) chaindata [regression testing](https://github.com/ethereumclassic/core-geth/blob/master/Jenkinsfile) run at each push to `master`.
 
 ### Extended _Improvement Proposal_ Support (EIP, ECIP, *IP)
 
@@ -131,7 +131,7 @@ if config.IsEnabled(config.EIP658Transition, blockNumber) {
 
 !!! example "Interface Reference"
     The complete interface pattern for supported feature methods
-    can be found here: https://github.com/etclabscore/core-geth/blob/master/params/types/ctypes/configurator_iface.go
+    can be found here: https://github.com/ethereumclassic/core-geth/blob/master/params/types/ctypes/configurator_iface.go
 
 The implicit feature-group `Byzantium` is deconstructed into its composite features, using EIPs and ECIP specifications as conceptual delineations as well as naming patterns.
 
@@ -157,7 +157,7 @@ Things ethereum/go-ethereum can or will do that CoreGeth won't, or doesn't by de
   and contributors, and ensuring proper delivery of a whole bunch of diverse artifacts is beyond our capacity.
   With that said, just because CoreGeth doesn't provide artifacts for a given architecture or OS doesn't mean it can't. 
   If ethereum/go-ethereum can build and package for it, then with some elbow grease, CoreGeth can too.
-- The `puppeth` CLI program has been [removed](https://github.com/etclabscore/core-geth/pull/270). This is a "wizard"-style interactive program that helps beginners
+- The `puppeth` CLI program has been [removed](https://github.com/ethereumclassic/core-geth/pull/270). This is a "wizard"-style interactive program that helps beginners
   configure chain and network settings.
 - Trim absolute file paths during build. As of a [somewhat-recent](TODO) Go version, `go build` provides a `-trim` flag
   which reduces the size of the binaries and anonymizes the build environment. This was removed because stripping file paths

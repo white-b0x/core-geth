@@ -9,7 +9,7 @@ title: Installation
 
 If you just want to download and run `geth` or any of the other tools here, this is the quickest and simplest way.
 
-Binary archives are published at https://github.com/etclabscore/core-geth/releases. Find the latest one for your OS, download it, (check the SHA sum), unarchive it, and run!
+Binary archives are published at https://github.com/ethereumclassic/core-geth/releases. Find the latest one for your OS, download it, (check the SHA sum), unarchive it, and run!
 
 ## With Docker
 

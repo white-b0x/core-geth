@@ -2,9 +2,9 @@
 
 > A [go-ethereum](https://github.com/ethereum/go-ethereum) fork providing the production Ethereum Classic (ETC) execution client.
 
-CoreGeth is the current production client for the Ethereum Classic network. It supports all ETC hard forks from Frontier through Spiral, and implements the upcoming **Olympia** hard fork (ECIP-1111, ECIP-1112, ECIP-1121).
+CoreGeth is the maintained legacy execution client for the Ethereum Classic network. It supports all ETC hard forks from Frontier through Spiral, and implements the upcoming **Olympia** hard fork (ECIP-1111, ECIP-1112, ECIP-1121).
 
-**Note:** Upstream go-ethereum has deprecated support for Ethereum Classic. Long-term, ETC will migrate to [Fukuii](https://github.com/chris-mercer/fukuii) as the native ETC client. CoreGeth remains the recommended production client during this transition.
+**Note:** CoreGeth is carried forward through the Olympia upgrade for network continuity and is scheduled to phase out as [Fukuii](https://github.com/chippr-robotics/fukuii) assumes the primary ETC client role in the Olympia era.
 
 ## Supported Networks
 
@@ -38,7 +38,7 @@ CoreGeth is the current production client for the Ethereum Classic network. It s
 
 ## Olympia Hard Fork
 
-The `olympia` branch implements the Olympia upgrade:
+The `main` branch implements the Olympia upgrade:
 
 - **ECIP-1111:** EIP-1559 dynamic base fee + EIP-3198 BASEFEE opcode. Base fee is redirected to the Olympia Treasury (not burned).
 - **ECIP-1112:** Deterministic, immutable Treasury contract receiving all base fee revenue.
@@ -55,9 +55,9 @@ The `olympia` branch implements the Olympia upgrade:
 
 | Client | Pre-Olympia | Post-Olympia | Role |
 |--------|-------------|--------------|------|
-| [core-geth](https://github.com/chris-mercer/core-geth) | `pre-olympia` branch | `olympia` branch | Production client |
-| [Fukuii](https://github.com/chris-mercer/fukuii) | `alpha` branch | `olympia` branch | Native ETC client (migration target) |
-| [Besu](https://github.com/chris-mercer/besu) | `etc` branch | `olympia` branch | Reference/testing client |
+| [core-geth](https://github.com/white-b0x/core-geth) | `pre-olympia` branch | `main` branch | Production client |
+| [Fukuii](https://github.com/chippr-robotics/fukuii) | `main` | `main` | Native ETC client (migration target) |
+| [Besu](https://github.com/white-b0x/besu) | `main` branch | `main` branch | Reference/testing client |
 
 ## Build
 ```bash
@@ -92,14 +92,12 @@ For testing with fake PoW (no DAG generation):
 
 ## Documentation
 
-- [ETC-HANDOFF.md](./ETC-HANDOFF.md) — Pre-Olympia branch documentation
-- [OLYMPIA-HANDOFF.md](./OLYMPIA-HANDOFF.md) — Olympia hard fork documentation
-- [CoreGeth docs](https://etclabscore.github.io/core-geth) — General documentation
+- [CoreGeth docs](https://ethereumclassic.github.io/core-geth) — General documentation
 - [go-ethereum docs](https://geth.ethereum.org/docs/) — Upstream reference
 
 ## Security Patches
 
-The `etc` branch includes 5 security patches applied before any feature work:
+The `pre-olympia` branch includes 5 security patches applied before any feature work:
 
 | CVE | Severity | Component |
 |-----|----------|-----------|

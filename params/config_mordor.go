@@ -24,6 +24,10 @@ import (
 	"github.com/ethereum/go-ethereum/params/vars"
 )
 
+// olympiaMordorBlock is the Mordor testnet Olympia activation block (not yet scheduled).
+// Update this single constant when the real block is chosen; all Olympia EIP fields reference it.
+const olympiaMordorBlock int64 = 1_000_000_000_000_000_000
+
 var (
 	// MordorChainConfig is the chain parameters to run a node on the Ethereum Classic Mordor test network (PoW).
 	MordorChainConfig = &coregeth.CoreGethChainConfig{
@@ -88,36 +92,30 @@ var (
 		// EIP4895FBlock: nil, // Beacon chain push withdrawals as operations
 		EIP6049FBlock: big.NewInt(9_957_000), // Deprecate SELFDESTRUCT (noop)
 
-		// Olympia (ECIP-1111: EIP-1559 + basefee treasury redirect)
-		// Not yet scheduled — far-future sentinel matching fukuii upstream/develop noFork value
-		EIP1559FBlock: big.NewInt(1_000_000_000_000_000_000), // EIP-1559 dynamic base fee
-		EIP3198FBlock: big.NewInt(1_000_000_000_000_000_000), // BASEFEE opcode
-
-		// Olympia (ECIP-1121: Cancun-equivalent EIPs)
-		EIP5656FBlock: big.NewInt(1_000_000_000_000_000_000), // MCOPY instruction
-		EIP1153FBlock: big.NewInt(1_000_000_000_000_000_000), // Transient storage (TLOAD/TSTORE)
-		EIP6780FBlock: big.NewInt(1_000_000_000_000_000_000), // SELFDESTRUCT only in same tx
-		EIP2537FBlock: big.NewInt(1_000_000_000_000_000_000), // BLS12-381 precompiles
-
-		// Olympia (ECIP-1121: Gas/limits EIPs)
-		EIP7823FBlock: big.NewInt(1_000_000_000_000_000_000), // MODEXP upper bounds (1024 bytes)
-		EIP7883FBlock: big.NewInt(1_000_000_000_000_000_000), // MODEXP gas cost increase
-		EIP7825FBlock: big.NewInt(1_000_000_000_000_000_000), // TX gas limit cap (30M)
-		EIP7623FBlock: big.NewInt(1_000_000_000_000_000_000), // Floor data gas cost
-
-		// Olympia (ECIP-1121: EVM EIPs)
-		EIP7951FBlock: big.NewInt(1_000_000_000_000_000_000), // secp256r1 P256VERIFY precompile
-		EIP2935FBlock: big.NewInt(1_000_000_000_000_000_000), // Historical block hashes from state
-		EIP7702FBlock: big.NewInt(1_000_000_000_000_000_000), // Set EOA account code
-		EIP7934FBlock: big.NewInt(1_000_000_000_000_000_000), // RLP execution block size limit
+		// Olympia (ECIP-1111/1112/1121) — not yet scheduled; update olympiaMordorBlock to activate
+		EIP1559FBlock: big.NewInt(olympiaMordorBlock), // EIP-1559 dynamic base fee
+		EIP3198FBlock: big.NewInt(olympiaMordorBlock), // BASEFEE opcode
+		EIP5656FBlock: big.NewInt(olympiaMordorBlock), // MCOPY instruction
+		EIP1153FBlock: big.NewInt(olympiaMordorBlock), // Transient storage (TLOAD/TSTORE)
+		EIP6780FBlock: big.NewInt(olympiaMordorBlock), // SELFDESTRUCT only in same tx
+		EIP2537FBlock: big.NewInt(olympiaMordorBlock), // BLS12-381 precompiles
+		EIP7823FBlock: big.NewInt(olympiaMordorBlock), // MODEXP upper bounds (1024 bytes)
+		EIP7883FBlock: big.NewInt(olympiaMordorBlock), // MODEXP gas cost increase
+		EIP7825FBlock: big.NewInt(olympiaMordorBlock), // TX gas limit cap (30M)
+		EIP7623FBlock: big.NewInt(olympiaMordorBlock), // Floor data gas cost
+		EIP7951FBlock: big.NewInt(olympiaMordorBlock), // secp256r1 P256VERIFY precompile
+		EIP2935FBlock: big.NewInt(olympiaMordorBlock), // Historical block hashes from state
+		EIP7702FBlock: big.NewInt(olympiaMordorBlock), // Set EOA account code
+		EIP7934FBlock: big.NewInt(olympiaMordorBlock), // RLP execution block size limit
 
 		DisposalBlock:            big.NewInt(0),
 		ECIP1017FBlock:           big.NewInt(0),
 		ECIP1017EraRounds:        big.NewInt(2000000),
 		ECIP1010PauseBlock:       nil,
 		ECIP1010Length:           nil,
-		ECBP1100FBlock:           big.NewInt(2380000),    // ETA 29 Sept 2020, ~1500 UTC
-		ECBP1100DeactivateFBlock: big.NewInt(10_400_000), // ETA 13 January 2024
+		ECBP1100FBlock:           big.NewInt(2380000),              // ETA 29 Sept 2020, ~1500 UTC
+		ECBP1100DeactivateFBlock: big.NewInt(10_400_000),           // ETA 13 January 2024
+		ECBP1100ReactivateFBlock: big.NewInt(olympiaMordorBlock),   // Olympia reactivates MESS
 
 		OlympiaTreasuryAddress: &OlympiaTreasuryAddr, // ECIP-1112 (see olympia_treasury.go)
 

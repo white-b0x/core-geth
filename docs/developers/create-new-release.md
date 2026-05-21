@@ -22,8 +22,8 @@ title: Publishing a Release
 - [ ] Edit `params/version.go` making the necessary changes to version information. (To `-unstable` version.)
 - [ ] `git commit -S -s -m "bump version from v1.11.16-stable to v1.11.17-unstable"`
 - [ ] `git push etclabscore`
-  > Push the branch. This will get PR'd, eg. https://github.com/etclabscore/core-geth/pull/197
-- [ ] Draft a new release, following the existing patterns for naming and notes. https://github.com/etclabscore/core-geth/releases/new
+  > Push the branch. This will get PR'd, eg. https://github.com/ethereumclassic/core-geth/pull/197
+- [ ] Draft a new release, following the existing patterns for naming and notes. https://github.com/ethereumclassic/core-geth/releases/new
     - Define the tag the release should be associated with (eg `v1.11.16`).
     - Linux, OSX, and Windows artifacts will be uploaded automatically to this release draft by the CI jobs. There should be CI-generated 34 assets total.
 

@@ -40,7 +40,7 @@ for:
 
 deploy:
   provider: GitHub
-  repository: etclabscore/core-geth
+  repository: ethereumclassic/core-geth
   artifact: /core-geth.*-win64-.*\.zip.*/
   auth_token:
     secure: tLl/Lbjrer4HCRxAUD/KHocjIsyRWuR7QeK5OCMVTv5lCF2IUKCT6h51nNW4hjOZ

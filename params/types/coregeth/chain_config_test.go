@@ -89,3 +89,54 @@ func TestCoreGethChainConfig_ECBP1100Deactivate(t *testing.T) {
 		t.Errorf("ECBP1100 should be deactivated at block %d", n)
 	}
 }
+
+func TestCoreGethChainConfig_ECBP1100Reactivation(t *testing.T) {
+	var _testConfig = &CoreGethChainConfig{}
+	*_testConfig = *testConfig
+
+	activate := uint64(100)
+	deactivate := uint64(200)
+	reactivate := uint64(300)
+	_testConfig.SetECBP1100Transition(&activate)
+	_testConfig.SetECBP1100DeactivateTransition(&deactivate)
+	_testConfig.SetECBP1100ReactivateTransition(&reactivate)
+
+	cases := []struct {
+		block uint64
+		want  bool
+	}{
+		{50, false},  // before activation
+		{100, true},  // at activation
+		{199, true},  // last block of first window
+		{200, false}, // at deactivation
+		{299, false}, // in gap
+		{300, true},  // at reactivation
+		{500, true},  // well after reactivation
+	}
+
+	for _, c := range cases {
+		bigN := new(big.Int).SetUint64(c.block)
+		got := _testConfig.IsEnabled(_testConfig.GetECBP1100Transition, bigN)
+		if got != c.want {
+			t.Errorf("block %d: IsEnabled=%v want=%v", c.block, got, c.want)
+		}
+	}
+}
+
+func TestCoreGethChainConfig_ECBP1100ReactivationNilField(t *testing.T) {
+	// Without a reactivation block, MESS stays deactivated after deactivation
+	var _testConfig = &CoreGethChainConfig{}
+	*_testConfig = *testConfig
+
+	activate := uint64(100)
+	deactivate := uint64(200)
+	_testConfig.SetECBP1100Transition(&activate)
+	_testConfig.SetECBP1100DeactivateTransition(&deactivate)
+	// ECBP1100ReactivateFBlock intentionally left nil
+
+	n := uint64(500)
+	bigN := new(big.Int).SetUint64(n)
+	if _testConfig.IsEnabled(_testConfig.GetECBP1100Transition, bigN) {
+		t.Errorf("ECBP1100 should remain deactivated at block %d when reactivation is nil", n)
+	}
+}

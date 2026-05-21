@@ -108,7 +108,7 @@ func (s *EthereumAccountAPI) Accounts() [ // Accounts returns the collection of 
 	return s.am.Accounts()
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L271" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L271" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -199,7 +199,7 @@ func (s *BlockChainAPI) BlockNumber() hexutil.Uint64 {
 }// BlockNumber returns the block number of the chain head.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L628" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L628" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -729,7 +729,7 @@ func (s *BlockChainAPI) Call(ctx context.Context, args TransactionArgs, blockNrO
 // useful to execute and retrieve values.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1126" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1126" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -829,7 +829,7 @@ func (api *BlockChainAPI) ChainId() *hexutil.Big {
 // in CL clients.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L623" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L623" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -919,7 +919,7 @@ func (api *EthereumAPI) Coinbase() (common.Address, error) {
 }// Coinbase is the address that mining rewards will be sent to (alias for Etherbase).
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/api.go#L40" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/api.go#L40" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1286,7 +1286,7 @@ func (s *BlockChainAPI) CreateAccessList(ctx context.Context, args TransactionAr
 // Reexec and BlockNrOrHash can be specified to create the accessList on top of a certain state.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1645" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1645" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1701,7 +1701,7 @@ func (s *BlockChainAPI) EstimateGas(ctx context.Context, args TransactionArgs, b
 // given transaction against the current pending block.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1273" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1273" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1791,7 +1791,7 @@ func (api *EthereumAPI) Etherbase() (common.Address, error) {
 }// Etherbase is the address that mining rewards will be sent to.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/api.go#L35" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/api.go#L35" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -2103,7 +2103,7 @@ func (s *EthereumAPI) FeeHistory(ctx context.Context, blockCount math.HexOrDecim
 	return results, nil
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L94" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L94" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -2415,7 +2415,7 @@ func (s *TransactionAPI) FillTransaction(ctx context.Context, args TransactionAr
 // processing (signing + broadcast).
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1996" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1996" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -2512,7 +2512,7 @@ func (s *EthereumAPI) GasPrice(ctx context.Context) (*hexutil.Big, error) {
 }// GasPrice returns a suggestion for a gas price for legacy transactions.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L66" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L66" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -2655,7 +2655,7 @@ func (s *BlockChainAPI) GetBalance(ctx context.Context, address common.Address, 
 // block numbers are also allowed.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L636" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L636" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -3102,7 +3102,7 @@ func (s *BlockChainAPI) GetBlockByHash(ctx context.Context, hash common.Hash, fu
 // detail, otherwise only the transaction hash is returned.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L817" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L817" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -3591,7 +3591,7 @@ func (s *BlockChainAPI) GetBlockByNumber(ctx context.Context, number rpc.BlockNu
 //     only the transaction hash is returned.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L802" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L802" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -3721,7 +3721,7 @@ func (s *TransactionAPI) GetBlockTransactionCountByHash(ctx context.Context, blo
 }// GetBlockTransactionCountByHash returns the number of transactions in the block with the given hash.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1757" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1757" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -3879,7 +3879,7 @@ func (s *TransactionAPI) GetBlockTransactionCountByNumber(ctx context.Context, b
 }// GetBlockTransactionCountByNumber returns the number of transactions in the block with the given block number.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1748" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1748" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -4019,7 +4019,7 @@ func (s *BlockChainAPI) GetCode(ctx context.Context, address common.Address, blo
 }// GetCode returns the code stored at the given address in the state for the given block number.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L876" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L876" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -4161,7 +4161,7 @@ func (api *FilterAPI) GetFilterChanges(id rpc.ID) (interface{}, error) {
 	return []interface{}{}, errFilterNotFound
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/filters/api.go#L480" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/filters/api.go#L480" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -4416,7 +4416,7 @@ func (api *FilterAPI) GetFilterLogs(ctx context.Context, id rpc.ID) ([ // GetFil
 	return returnLogs(logs), nil
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/filters/api.go#L441" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/filters/api.go#L441" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -4506,7 +4506,7 @@ func (api *API) GetHashrate() uint64 {
 }// GetHashrate returns the current hashrate for local CPU miner and remote miner.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/consensus/ethash/api.go#L111" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/consensus/ethash/api.go#L111" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -4838,7 +4838,7 @@ func (s *BlockChainAPI) GetHeaderByHash(ctx context.Context, hash common.Hash) *
 }// GetHeaderByHash returns the requested header by hash.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L787" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L787" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -5210,7 +5210,7 @@ func (s *BlockChainAPI) GetHeaderByNumber(ctx context.Context, number rpc.BlockN
 //   - When blockNr is -4 the chain safe header is returned.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L773" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L773" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -5531,7 +5531,7 @@ func (api *FilterAPI) GetLogs(ctx context.Context, crit FilterCriteria) ([ // Ge
 	return returnLogs(logs), err
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/filters/api.go#L398" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/filters/api.go#L398" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -5866,7 +5866,7 @@ func (s *BlockChainAPI) GetProof(ctx context.Context, address common.Address, st
 	return &AccountResult{Address: address, AccountProof: toHexSlice(accountProof), Balance: (*hexutil.Big)(state.GetBalance(address)), CodeHash: codeHash, Nonce: hexutil.Uint64(state.GetNonce(address)), StorageHash: storageHash, StorageProof: storageProof}, state.Error()
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L675" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L675" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -6029,7 +6029,7 @@ func (s *TransactionAPI) GetRawTransactionByBlockHashAndIndex(ctx context.Contex
 }// GetRawTransactionByBlockHashAndIndex returns the bytes of the transaction for the given block hash and index.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1790" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1790" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -6220,7 +6220,7 @@ func (s *TransactionAPI) GetRawTransactionByBlockNumberAndIndex(ctx context.Cont
 }// GetRawTransactionByBlockNumberAndIndex returns the bytes of the transaction for the given block number and index.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1782" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1782" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -6355,7 +6355,7 @@ func (s *TransactionAPI) GetRawTransactionByHash(ctx context.Context, hash commo
 }// GetRawTransactionByHash returns the bytes of the transaction for the given hash.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1840" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1840" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -6512,7 +6512,7 @@ func (s *BlockChainAPI) GetStorageAt(ctx context.Context, address common.Address
 	:], state.Error()
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L888" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L888" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -6911,7 +6911,7 @@ func (s *TransactionAPI) GetTransactionByBlockHashAndIndex(ctx context.Context, 
 }// GetTransactionByBlockHashAndIndex returns the transaction for the given block hash and index.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1774" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1774" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -7338,7 +7338,7 @@ func (s *TransactionAPI) GetTransactionByBlockNumberAndIndex(ctx context.Context
 }// GetTransactionByBlockNumberAndIndex returns the transaction for the given block number and index.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1766" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1766" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -7714,7 +7714,7 @@ func (s *TransactionAPI) GetTransactionByHash(ctx context.Context, hash common.H
 }// GetTransactionByHash returns the transaction for the given hash
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1817" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1817" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -7861,7 +7861,7 @@ func (s *TransactionAPI) GetTransactionCount(ctx context.Context, address common
 }// GetTransactionCount returns the number of transactions the given address has sent for the given block number
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1798" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1798" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -8020,7 +8020,7 @@ func (s *TransactionAPI) GetTransactionReceipt(ctx context.Context, hash common.
 	return fields, nil
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1857" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1857" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -8498,7 +8498,7 @@ func (s *BlockChainAPI) GetUncleByBlockHashAndIndex(ctx context.Context, blockHa
 // all transactions in the block are returned in full detail, otherwise only the transaction hash is returned.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L843" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L843" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -9004,7 +9004,7 @@ func (s *BlockChainAPI) GetUncleByBlockNumberAndIndex(ctx context.Context, block
 // all transactions in the block are returned in full detail, otherwise only the transaction hash is returned.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L827" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L827" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -9134,7 +9134,7 @@ func (s *BlockChainAPI) GetUncleCountByBlockHash(ctx context.Context, blockHash 
 }// GetUncleCountByBlockHash returns number of uncles in the block for the given block hash
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L867" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L867" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -9292,7 +9292,7 @@ func (s *BlockChainAPI) GetUncleCountByBlockNumber(ctx context.Context, blockNr 
 }// GetUncleCountByBlockNumber returns number of uncles in the block for the given block number
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L858" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L858" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -9422,7 +9422,7 @@ func (api *API) GetWork() ([4]string, error) {
 //	result[3] - hex encoded block number
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/consensus/ethash/api.go#L42" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/consensus/ethash/api.go#L42" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -9512,7 +9512,7 @@ func (api *EthereumAPI) Hashrate() hexutil.Uint64 {
 }// Hashrate returns the POW hashrate.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/api.go#L45" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/api.go#L45" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -9727,7 +9727,7 @@ func (api *FilterAPI) Logs(ctx context.Context, crit FilterCriteria) (*rpc.Subsc
 	return rpcSub, nil
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/filters/api.go#L313" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/filters/api.go#L313" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -9821,7 +9821,7 @@ func (s *EthereumAPI) MaxPriorityFeePerGas(ctx context.Context) (*hexutil.Big, e
 }// MaxPriorityFeePerGas returns a suggestion for a gas tip cap for dynamic fee transactions.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L78" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L78" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -9886,7 +9886,7 @@ func (api *EthereumAPI) Mining() bool {
 }// Mining returns an indication if this node is currently mining.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/api.go#L51" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/api.go#L51" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -9988,7 +9988,7 @@ func (api *FilterAPI) NewBlockFilter() rpc.ID {
 	return headerSub.ID
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/filters/api.go#L188" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/filters/api.go#L188" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -10217,7 +10217,7 @@ func (api *FilterAPI) NewFilter(crit FilterCriteria) (rpc.ID, error) {
 	return logsSub.ID, nil
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/filters/api.go#L365" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/filters/api.go#L365" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -10316,7 +10316,7 @@ func (api *FilterAPI) NewHeads(ctx context.Context) (*rpc.Subscription, error) {
 }// NewHeads send a notification each time a new (header) block is appended to the chain.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/filters/api.go#L253" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/filters/api.go#L253" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -10435,7 +10435,7 @@ func (api *FilterAPI) NewPendingTransactionFilter(fullTx *bool) rpc.ID {
 	return pendingTxSub.ID
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/filters/api.go#L112" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/filters/api.go#L112" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -10558,7 +10558,7 @@ func (api *FilterAPI) NewPendingTransactions(ctx context.Context, fullTx *bool) 
 	return rpcSub, nil
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/filters/api.go#L146" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/filters/api.go#L146" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -10660,7 +10660,7 @@ func (api *FilterAPI) NewSideBlockFilter() rpc.ID {
 	return headerSub.ID
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/filters/api.go#L221" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/filters/api.go#L221" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -10759,7 +10759,7 @@ func (api *FilterAPI) NewSideHeads(ctx context.Context) (*rpc.Subscription, erro
 }// NewSideHeads send a notification each time a new non-canonical (header) block is written to the database.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/filters/api.go#L283" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/filters/api.go#L283" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -11116,7 +11116,7 @@ func (s *TransactionAPI) PendingTransactions() ([ // PendingTransactions returns
 	return transactions, nil
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L2085" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L2085" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -11511,7 +11511,7 @@ func (s *TransactionAPI) Resend(ctx context.Context, sendArgs TransactionArgs, g
 	return common.Hash{}, fmt.Errorf("transaction %#x not found", matchTx.Hash())
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L2109" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L2109" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -11643,7 +11643,7 @@ func (s *TransactionAPI) SendRawTransaction(ctx context.Context, input hexutil.B
 // The sender is responsible for signing the transaction and using the correct nonce.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L2012" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L2012" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -11944,7 +11944,7 @@ func (s *TransactionAPI) SendTransaction(ctx context.Context, args TransactionAr
 // transaction pool.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L1963" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L1963" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -12129,7 +12129,7 @@ func (s *TransactionAPI) Sign(addr common.Address, data hexutil.Bytes) (hexutil.
 // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L2029" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L2029" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -12457,7 +12457,7 @@ func (s *TransactionAPI) SignTransaction(ctx context.Context, args TransactionAr
 // the given from address and it needs to be unlocked.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L2054" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L2054" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -12612,7 +12612,7 @@ func (api *API) SubmitHashrate(rate hexutil.Uint64, id common.Hash) bool {
 // between nodes.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/consensus/ethash/api.go#L93" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/consensus/ethash/api.go#L93" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -12795,7 +12795,7 @@ func (api *API) SubmitWork(nonce types.BlockNonce, hash, digest common.Hash) boo
 // Note either an invalid solution, a stale work a non-existent work will return false.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/consensus/ethash/api.go#L67" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/consensus/ethash/api.go#L67" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -12983,7 +12983,7 @@ func (sub *RPCEthSubscription) Subscribe(subscriptionName RPCEthSubscriptionPara
 // Subscriptions are not available over HTTP; they are only available over WS, IPC, and Process connections.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/openrpc.go#L233" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/openrpc.go#L233" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -13082,7 +13082,7 @@ func (api *DownloaderAPI) Syncing(ctx context.Context) (*rpc.Subscription, error
 }// Syncing provides information when this nodes starts synchronising with the Ethereum network and when it's finished.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/downloader/api.go#L93" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/downloader/api.go#L93" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -13162,7 +13162,7 @@ func (s *EthereumAPI) Syncing() (interface{}, error) {
 	[string]interface{}{"startingBlock": hexutil.Uint64(progress.StartingBlock), "currentBlock": hexutil.Uint64(progress.CurrentBlock), "highestBlock": hexutil.Uint64(progress.HighestBlock), "syncedAccounts": hexutil.Uint64(progress.SyncedAccounts), "syncedAccountBytes": hexutil.Uint64(progress.SyncedAccountBytes), "syncedBytecodes": hexutil.Uint64(progress.SyncedBytecodes), "syncedBytecodeBytes": hexutil.Uint64(progress.SyncedBytecodeBytes), "syncedStorage": hexutil.Uint64(progress.SyncedStorage), "syncedStorageBytes": hexutil.Uint64(progress.SyncedStorageBytes), "healedTrienodes": hexutil.Uint64(progress.HealedTrienodes), "healedTrienodeBytes": hexutil.Uint64(progress.HealedTrienodeBytes), "healedBytecodes": hexutil.Uint64(progress.HealedBytecodes), "healedBytecodeBytes": hexutil.Uint64(progress.HealedBytecodeBytes), "healingTrienodes": hexutil.Uint64(progress.HealingTrienodes), "healingBytecode": hexutil.Uint64(progress.HealingBytecode)}, nil
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/internal/ethapi/api.go#L128" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/internal/ethapi/api.go#L128" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -13270,7 +13270,7 @@ func (api *FilterAPI) UninstallFilter(id rpc.ID) bool {
 }// UninstallFilter removes the filter with the given filter id.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/filters/api.go#L425" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/filters/api.go#L425" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -13361,7 +13361,7 @@ func (sub *RPCEthSubscription) Unsubscribe(id rpc.ID) error {
 }// Unsubscribe terminates an existing subscription by ID.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/openrpc.go#L224" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/openrpc.go#L224" target="_">View on GitHub →</a>
 </p>
 </details>
 

@@ -97,7 +97,7 @@ func (api *API) GetHashrate() uint64 {
 }// GetHashrate returns the current hashrate for local CPU miner and remote miner.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/consensus/ethash/api.go#L111" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/consensus/ethash/api.go#L111" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -227,7 +227,7 @@ func (api *API) GetWork() ([4]string, error) {
 //	result[3] - hex encoded block number
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/consensus/ethash/api.go#L42" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/consensus/ethash/api.go#L42" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -382,7 +382,7 @@ func (api *API) SubmitHashrate(rate hexutil.Uint64, id common.Hash) bool {
 // between nodes.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/consensus/ethash/api.go#L93" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/consensus/ethash/api.go#L93" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -565,7 +565,7 @@ func (api *API) SubmitWork(nonce types.BlockNonce, hash, digest common.Hash) boo
 // Note either an invalid solution, a stale work a non-existent work will return false.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/consensus/ethash/api.go#L67" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/consensus/ethash/api.go#L67" target="_">View on GitHub →</a>
 </p>
 </details>
 

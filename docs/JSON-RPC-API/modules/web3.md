@@ -72,7 +72,7 @@ func (s *web3API) ClientVersion() string {
 }// ClientVersion returns the node name
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L329" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L329" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -200,7 +200,7 @@ func (s *web3API) Sha3(input hexutil.Bytes) hexutil.Bytes {
 // It assumes the input is hex encoded.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L335" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L335" target="_">View on GitHub →</a>
 </p>
 </details>
 

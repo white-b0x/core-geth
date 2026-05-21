@@ -94,7 +94,7 @@ func (api *adminAPI) AddPeer(url string) (bool, error) {
 // connection at all times, even reconnecting if it is lost.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L57" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L57" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -179,7 +179,7 @@ func (api *adminAPI) AddTrustedPeer(url string) (bool, error) {
 }// AddTrustedPeer allows a remote node to always connect, even if slots are full
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L89" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L89" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -244,7 +244,7 @@ func (api *adminAPI) Datadir() string {
 }// Datadir retrieves the current data directory the node is using.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L320" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L320" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -373,7 +373,7 @@ func (api *AdminAPI) Ecbp1100(blockNr rpc.BlockNumber) (bool, error) {
 	return api.eth.blockchain.IsArtificialFinalityEnabled() && api.eth.blockchain.Config().IsEnabled(api.eth.blockchain.Config().GetECBP1100Transition, api.eth.blockchain.CurrentBlock().Number), err
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/api_admin.go#L142" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/api_admin.go#L142" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -546,7 +546,7 @@ func (api *AdminAPI) ExportChain(file string, first *uint64, last *uint64) (bool
 // or a range of blocks if first and last are non-nil.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/api_admin.go#L46" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/api_admin.go#L46" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -658,7 +658,7 @@ func (api *AdminAPI) ImportChain(file string) (bool, error) {
 	return true, nil
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/api_admin.go#L94" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/api_admin.go#L94" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -768,7 +768,7 @@ func (api *AdminAPI) MaxPeers(n int) (bool, error) {
 }// MaxPeers sets the maximum peer limit for the protocol manager and the p2p server.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/eth/api_admin.go#L152" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/eth/api_admin.go#L152" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -964,7 +964,7 @@ func (api *adminAPI) NodeInfo() (*p2p.NodeInfo, error) {
 // protocol granularity.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L310" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L310" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1070,7 +1070,7 @@ func (api *adminAPI) PeerEvents(ctx context.Context) (*rpc.Subscription, error) 
 // node's p2p.Server
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L121" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L121" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1297,7 +1297,7 @@ func (api *adminAPI) Peers() ([ // Peers retrieves all the information we know a
 	return server.PeersInfo(), nil
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L300" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L300" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1382,7 +1382,7 @@ func (api *adminAPI) RemovePeer(url string) (bool, error) {
 }// RemovePeer disconnects from a remote node if the connection exists
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L73" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L73" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1469,7 +1469,7 @@ func (api *adminAPI) RemoveTrustedPeer(url string) (bool, error) {
 // does not disconnect it automatically.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L105" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L105" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1646,7 +1646,7 @@ func (api *adminAPI) StartHTTP(host *string, port *int, cors *string, apis *stri
 	return true, nil
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L158" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L158" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1786,7 +1786,7 @@ func (api *adminAPI) StartRPC(host *string, port *int, cors *string, apis *strin
 // Deprecated: use StartHTTP instead.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L217" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L217" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -1951,7 +1951,7 @@ func (api *adminAPI) StartWS(host *string, port *int, allowedOrigins *string, ap
 	return true, nil
 }
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L236" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L236" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -2017,7 +2017,7 @@ func (api *adminAPI) StopHTTP() (bool, error) {
 }// StopHTTP shuts down the HTTP server.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L223" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L223" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -2085,7 +2085,7 @@ func (api *adminAPI) StopRPC() (bool, error) {
 // Deprecated: use StopHTTP instead.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L230" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L230" target="_">View on GitHub →</a>
 </p>
 </details>
 
@@ -2152,7 +2152,7 @@ func (api *adminAPI) StopWS() (bool, error) {
 }// StopWS terminates all WebSocket servers.
 
 ```
-<a href="https://github.com/etclabscore/core-geth/blob/master/node/api.go#L292" target="_">View on GitHub →</a>
+<a href="https://github.com/ethereumclassic/core-geth/blob/master/node/api.go#L292" target="_">View on GitHub →</a>
 </p>
 </details>
 
