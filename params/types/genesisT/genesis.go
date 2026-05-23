@@ -1201,6 +1201,22 @@ func (g *Genesis) SetLyra2NonceTransition(n *uint64) error {
 	return g.Config.SetLyra2NonceTransition(n)
 }
 
+func (g *Genesis) GetSpiralGasTarget() *uint64 {
+	return g.Config.GetSpiralGasTarget()
+}
+
+func (g *Genesis) SetSpiralGasTarget(n *uint64) error {
+	return g.Config.SetSpiralGasTarget(n)
+}
+
+func (g *Genesis) GetOlympiaGasTarget() *uint64 {
+	return g.Config.GetOlympiaGasTarget()
+}
+
+func (g *Genesis) SetOlympiaGasTarget(n *uint64) error {
+	return g.Config.SetOlympiaGasTarget(n)
+}
+
 func (g *Genesis) String() string {
 	j, _ := json.MarshalIndent(g, "", "    ")
 	return "Genesis: " + string(j)

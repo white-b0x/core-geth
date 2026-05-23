@@ -454,6 +454,24 @@ func (c *CoreGethChainConfig) SetOlympiaTreasuryAddress(addr *common.Address) er
 	return nil
 }
 
+func (c *CoreGethChainConfig) GetSpiralGasTarget() *uint64 {
+	return c.SpiralGasTarget
+}
+
+func (c *CoreGethChainConfig) SetSpiralGasTarget(n *uint64) error {
+	c.SpiralGasTarget = n
+	return nil
+}
+
+func (c *CoreGethChainConfig) GetOlympiaGasTarget() *uint64 {
+	return c.OlympiaGasTarget
+}
+
+func (c *CoreGethChainConfig) SetOlympiaGasTarget(n *uint64) error {
+	c.OlympiaGasTarget = n
+	return nil
+}
+
 func (c *CoreGethChainConfig) GetEIP7823Transition() *uint64 {
 	return bigNewU64(c.EIP7823FBlock)
 }

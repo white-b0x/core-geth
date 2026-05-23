@@ -1111,11 +1111,20 @@ func (w *worker) prepareWork(genParams *generateParams) (*environment, error) {
 		}
 		timestamp = parent.Time + 1
 	}
+	// Determine effective gas ceiling from the fork schedule (ETC) or operator
+	// --miner.gaslimit config (ETH and other chains).
+	// For ETC: the fork schedule is authoritative — SpiralGasTarget (8M) pre-Olympia,
+	// OlympiaGasTarget (60M) post-activation. This prevents operator misconfiguration
+	// from causing pre-Olympia gas creep or post-activation stagnation at 8M.
+	gasCeil := w.config.GasCeil
+	if forkTarget := eip1559.ForkGasTarget(w.chainConfig, new(big.Int).Add(parent.Number, common.Big1)); forkTarget != nil {
+		gasCeil = *forkTarget
+	}
 	// Construct the sealing block header.
 	header := &types.Header{
 		ParentHash: parent.Hash(),
 		Number:     new(big.Int).Add(parent.Number, common.Big1),
-		GasLimit:   core.CalcGasLimit(parent.GasLimit, w.config.GasCeil),
+		GasLimit:   core.CalcGasLimit(parent.GasLimit, gasCeil),
 		Time:       timestamp,
 		Coinbase:   genParams.coinbase,
 	}
@@ -1127,12 +1136,19 @@ func (w *worker) prepareWork(genParams *generateParams) (*environment, error) {
 	if genParams.random != (common.Hash{}) {
 		header.MixDigest = genParams.random
 	}
-	// Set baseFee and GasLimit if we are on an EIP-1559 chain
+	// Set baseFee and GasLimit if we are on an EIP-1559 chain.
+	// ETH London: at fork activation, parentGasLimit is doubled so gasTarget = new limit / 2
+	// = old limit (effective throughput preserved). ETC Olympia must NOT apply this doubling —
+	// the fork schedule already handles the 8M→60M ramp via standard ±1/1024 steps.
 	if w.chainConfig.IsEnabled(w.chainConfig.GetEIP1559Transition, header.Number) {
 		header.BaseFee = eip1559.CalcBaseFee(w.chainConfig, parent)
 		if !w.chainConfig.IsEnabled(w.chainConfig.GetEIP1559Transition, parent.Number) {
-			parentGasLimit := parent.GasLimit * w.chainConfig.GetElasticityMultiplier()
-			header.GasLimit = core.CalcGasLimit(parentGasLimit, w.config.GasCeil)
+			if eip1559.ForkGasTarget(w.chainConfig, header.Number) == nil {
+				// ETH only: apply 2× at fork boundary.
+				parentGasLimit := parent.GasLimit * w.chainConfig.GetElasticityMultiplier()
+				header.GasLimit = core.CalcGasLimit(parentGasLimit, gasCeil)
+			}
+			// ETC: GasLimit already set via CalcGasLimit above — no 2× jump.
 		}
 	}
 	// Apply EIP-4844.

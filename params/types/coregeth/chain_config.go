@@ -286,6 +286,14 @@ type CoreGethChainConfig struct {
 	// ECIP-1111: Olympia Treasury address for basefee redirect
 	OlympiaTreasuryAddress *common.Address `json:"olympiaTreasuryAddress,omitempty"`
 
+	// ECIP-1121 fork-parameterised gas schedule.
+	// SpiralGasTarget is the miner gas-limit target for Spiral-era blocks (pre-Olympia).
+	// OlympiaGasTarget is the target after Olympia activates.
+	// When non-nil these values override the operator --miner.gaslimit flag, preventing
+	// inadvertent pre-Olympia gas creep on ETC. nil means "no schedule; use operator config".
+	SpiralGasTarget  *uint64 `json:"spiralGasTarget,omitempty"`
+	OlympiaGasTarget *uint64 `json:"olympiaGasTarget,omitempty"`
+
 	// ECIP-1121 Olympia EIPs:
 	EIP7823FBlock *big.Int `json:"eip7823FBlock,omitempty"` // EIP-7823: Set upper bounds for MODEXP
 	EIP7883FBlock *big.Int `json:"eip7883FBlock,omitempty"` // EIP-7883: ModExp gas cost increase

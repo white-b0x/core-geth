@@ -109,6 +109,12 @@ var (
 		// EIP4895FBlock: nil, // Beacon chain push withdrawals as operations
 		EIP6049FBlock: big.NewInt(19_250_000), // Deprecate SELFDESTRUCT (noop)
 
+		// ECIP-1121 fork-parameterised gas schedule:
+		// pre-Olympia ETC blocks target 8M; post-Olympia they converge to 60M.
+		// These values override --miner.gaslimit, making the schedule network-authoritative.
+		SpiralGasTarget:  newUint64(8_000_000),
+		OlympiaGasTarget: newUint64(60_000_000),
+
 		// Olympia (ECIP-1111/1112/1121) — not yet scheduled; update olympiaMainnetBlock to activate
 		EIP1559FBlock: big.NewInt(olympiaMainnetBlock), // EIP-1559 dynamic base fee
 		EIP3198FBlock: big.NewInt(olympiaMainnetBlock), // BASEFEE opcode

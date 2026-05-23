@@ -533,6 +533,23 @@ func (c *ChainConfig) SetEIP7934Transition(n *uint64) error {
 	return nil
 }
 
+// GetSpiralGasTarget and GetOlympiaGasTarget return nil for non-ETC chains.
+// ETC embeds a fork-parameterised gas schedule; ETH uses operator --miner.gaslimit.
+func (c *ChainConfig) GetSpiralGasTarget() *uint64 { return nil }
+func (c *ChainConfig) SetSpiralGasTarget(n *uint64) error {
+	if n != nil {
+		return ctypes.ErrUnsupportedConfigFatal
+	}
+	return nil
+}
+func (c *ChainConfig) GetOlympiaGasTarget() *uint64 { return nil }
+func (c *ChainConfig) SetOlympiaGasTarget(n *uint64) error {
+	if n != nil {
+		return ctypes.ErrUnsupportedConfigFatal
+	}
+	return nil
+}
+
 // GetEIP2315Transition implements EIP2537.
 // This logic is written but not configured for any Ethereum-supported networks, yet.
 func (c *ChainConfig) GetEIP2315Transition() *uint64 {

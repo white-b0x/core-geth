@@ -150,6 +150,14 @@ type ProtocolSpecifier interface {
 	GetOlympiaTreasuryAddress() *common.Address
 	SetOlympiaTreasuryAddress(addr *common.Address) error
 
+	// ECIP-1121: fork-parameterised gas schedule (ETC only; nil = use operator config).
+	// Spiral era: pre-Olympia ETC blocks should target 8M.
+	// Olympia era: post-activation ETC blocks should converge to 60M.
+	GetSpiralGasTarget() *uint64
+	SetSpiralGasTarget(n *uint64) error
+	GetOlympiaGasTarget() *uint64
+	SetOlympiaGasTarget(n *uint64) error
+
 	GetEIP2315Transition() *uint64
 	SetEIP2315Transition(n *uint64) error
 

@@ -29,14 +29,43 @@ import (
 	"github.com/ethereum/go-ethereum/params/vars"
 )
 
+// ForkGasTarget returns the fork-parameterised gas limit target for the given
+// block number, or nil if no schedule is configured (ETH and other non-ETC chains
+// return nil, meaning the operator --miner.gaslimit flag controls the target).
+//
+// For ETC: Spiral-era blocks return SpiralGasTarget (8M); Olympia+ blocks return
+// OlympiaGasTarget (60M). The values come from chain config so they are
+// network-authoritative and cannot be overridden by operator flags.
+func ForkGasTarget(config ctypes.ChainConfigurator, blockNum *big.Int) *uint64 {
+	if !blockNum.IsUint64() {
+		return nil
+	}
+	n := blockNum.Uint64()
+	olympia := config.GetEIP1559Transition()
+	if olympia != nil && n >= *olympia {
+		return config.GetOlympiaGasTarget()
+	}
+	spiral := config.GetEIP3855Transition()
+	if spiral != nil && n >= *spiral {
+		return config.GetSpiralGasTarget()
+	}
+	return nil
+}
+
 // VerifyEIP1559Header verifies some header attributes which were changed in EIP-1559,
 // - gas limit check
 // - basefee check
 func VerifyEIP1559Header(config ctypes.ChainConfigurator, parent, header *types.Header) error {
-	// Verify that the gas limit remains within allowed bounds
+	// Verify that the gas limit remains within allowed bounds.
+	// ETH London: at the EIP-1559 activation block, the parent gas limit is doubled
+	// so that gasTarget = new gasLimit / 2 = old gasLimit (effective throughput preserved).
+	// ETC Olympia: this doubling must NOT apply — ETC uses a fork-parameterised gas
+	// schedule (ForkGasTarget) for a gradual 8M→60M ramp. Skip the 2× for ETC chains.
 	parentGasLimit := parent.GasLimit
 	if !config.IsEnabled(config.GetEIP1559Transition, parent.Number) {
-		parentGasLimit = parent.GasLimit * config.GetElasticityMultiplier()
+		if ForkGasTarget(config, header.Number) == nil {
+			parentGasLimit = parent.GasLimit * config.GetElasticityMultiplier()
+		}
 	}
 	if err := misc.VerifyGaslimit(parentGasLimit, header.GasLimit); err != nil {
 		return err
@@ -85,10 +114,18 @@ func CalcBaseFee(config ctypes.ChainConfigurator, parent *types.Header) *big.Int
 	} else {
 		// Otherwise if the parent block used less gas than its target, the baseFee should decrease.
 		// max(0, parentBaseFee * gasUsedDelta / parentGasTarget / baseFeeChangeDenominator)
+		//
+		// The delta is floored at 1 before subtraction (matches go-ethereum and Fukuii canonical
+		// behaviour). Without this floor, when baseFee = 1 wei and gasUsed = 0, integer division
+		// truncates the delta to 0, leaving baseFee stuck at 1 wei forever instead of decaying
+		// to 0 on the next empty block.
 		num.SetUint64(parentGasTarget - parent.GasUsed)
 		num.Mul(num, parent.BaseFee)
 		num.Div(num, denom.SetUint64(parentGasTarget))
 		num.Div(num, denom.SetUint64(config.GetBaseFeeChangeDenominator()))
+		if num.Sign() == 0 {
+			num.SetUint64(1) // floor delta at 1
+		}
 		baseFee := num.Sub(parent.BaseFee, num)
 
 		return math.BigMax(baseFee, common.Big0)
