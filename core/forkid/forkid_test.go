@@ -165,8 +165,8 @@ func TestCreation(t *testing.T) {
 				{14_525_000, 0, ID{Hash: checksumToBytes(0x7fd1bb25), Next: 19_250_000}},
 				{14_525_001, 0, ID{Hash: checksumToBytes(0x7fd1bb25), Next: 19_250_000}},
 				{19_249_999, 0, ID{Hash: checksumToBytes(0x7fd1bb25), Next: 19_250_000}},
-				{19_250_000, 0, ID{Hash: checksumToBytes(0xbe46d57c), Next: 0}},
-				{19_250_001, 0, ID{Hash: checksumToBytes(0xbe46d57c), Next: 0}},
+				{19_250_000, 0, ID{Hash: checksumToBytes(0xbe46d57c), Next: 1_000_000_000_000_000_000}},
+				{19_250_001, 0, ID{Hash: checksumToBytes(0xbe46d57c), Next: 1_000_000_000_000_000_000}},
 			},
 		},
 		{
@@ -195,11 +195,11 @@ func TestCreation(t *testing.T) {
 				{5_520_000, 0, ID{Hash: checksumToBytes(0x8c9b1797), Next: 9_957_000}},
 				{5_520_001, 0, ID{Hash: checksumToBytes(0x8c9b1797), Next: 9_957_000}},
 				{9_956_999, 0, ID{Hash: checksumToBytes(0x8c9b1797), Next: 9_957_000}},
-				{9_957_000, 0, ID{Hash: checksumToBytes(0x3a6b00d7), Next: 15_800_850}},
-				{9_957_001, 0, ID{Hash: checksumToBytes(0x3a6b00d7), Next: 15_800_850}},
-				{15_800_849, 0, ID{Hash: checksumToBytes(0x3a6b00d7), Next: 15_800_850}},
-				{15_800_850, 0, ID{Hash: checksumToBytes(0x17ca6da6), Next: 0}},
-				{15_800_851, 0, ID{Hash: checksumToBytes(0x17ca6da6), Next: 0}},
+				{9_957_000, 0, ID{Hash: checksumToBytes(0x3a6b00d7), Next: 1_000_000_000_000_000_000}},
+				{9_957_001, 0, ID{Hash: checksumToBytes(0x3a6b00d7), Next: 1_000_000_000_000_000_000}},
+				{15_800_849, 0, ID{Hash: checksumToBytes(0x3a6b00d7), Next: 1_000_000_000_000_000_000}},
+				{15_800_850, 0, ID{Hash: checksumToBytes(0x3a6b00d7), Next: 1_000_000_000_000_000_000}},
+				{15_800_851, 0, ID{Hash: checksumToBytes(0x3a6b00d7), Next: 1_000_000_000_000_000_000}},
 			},
 		},
 		// MintMe test cases
@@ -483,7 +483,7 @@ func TestGatherForks(t *testing.T) {
 		{
 			"classic",
 			params.ClassicChainConfig,
-			[]uint64{1150000, 2500000, 3000000, 5000000, 5900000, 8772000, 9573000, 10500839, 11_700_000, 13_189_133, 14_525_000, 19_250_000},
+			[]uint64{1150000, 2500000, 3000000, 5000000, 5900000, 8772000, 9573000, 10500839, 11_700_000, 13_189_133, 14_525_000, 19_250_000, 1_000_000_000_000_000_000},
 			[]uint64{},
 		},
 		{
@@ -501,7 +501,7 @@ func TestGatherForks(t *testing.T) {
 		{
 			"mordor",
 			params.MordorChainConfig,
-			[]uint64{301_243, 999_983, 2_520_000, 3_985_893, 5_520_000, 9_957_000, 15_800_850},
+			[]uint64{301_243, 999_983, 2_520_000, 3_985_893, 5_520_000, 9_957_000, 1_000_000_000_000_000_000},
 			[]uint64{},
 		},
 		{

@@ -58,6 +58,7 @@ func newValidationConfig(forkBlock *big.Int) *coregeth.CoreGethChainConfig {
 		EIP2930FBlock: big.NewInt(0),
 		EIP1559FBlock: forkBlock,
 		EIP3198FBlock: forkBlock,
+		EIP7702FBlock: forkBlock,
 		EIP7825FBlock: forkBlock,
 		EIP7623FBlock: forkBlock,
 		EIP2028FBlock: big.NewInt(0),
