@@ -74,12 +74,12 @@ type rpcBlock struct {
 
 // rpcTx is a minimal transaction structure for JSON-RPC responses.
 type rpcTx struct {
-	Hash     common.Hash    `json:"hash"`
-	Type     hexutil.Uint64 `json:"type"`
-	GasPrice *hexutil.Big   `json:"gasPrice"`
-	Gas      *hexutil.Big   `json:"gas"`
+	Hash     common.Hash     `json:"hash"`
+	Type     hexutil.Uint64  `json:"type"`
+	GasPrice *hexutil.Big    `json:"gasPrice"`
+	Gas      *hexutil.Big    `json:"gas"`
 	To       *common.Address `json:"to"`
-	Value    *hexutil.Big   `json:"value"`
+	Value    *hexutil.Big    `json:"value"`
 	// EIP-1559 fields
 	MaxFeePerGas         *hexutil.Big `json:"maxFeePerGas"`
 	MaxPriorityFeePerGas *hexutil.Big `json:"maxPriorityFeePerGas"`

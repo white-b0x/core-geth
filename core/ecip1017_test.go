@@ -131,10 +131,10 @@ func TestECIP1017EraRewardsIntegration(t *testing.T) {
 // for both Classic (5M era) and Mordor (2M era) configurations.
 func TestECIP1017EraCalculation(t *testing.T) {
 	cases := []struct {
-		name     string
-		block    int64
-		eraLen   int64
-		wantEra  int64
+		name    string
+		block   int64
+		eraLen  int64
+		wantEra int64
 	}{
 		// Classic mainnet (5M era rounds)
 		{"Classic block 1 (era 0)", 1, 5000000, 0},
@@ -167,10 +167,10 @@ func TestECIP1017RewardDecay(t *testing.T) {
 	eraLen := big.NewInt(5000000)
 
 	cases := []struct {
-		name     string
-		block    int64
-		wantWei  uint64
-		wantETC  string
+		name    string
+		block   int64
+		wantWei uint64
+		wantETC string
 	}{
 		{"Era 0 (5 ETC)", 1, 5e18, "5.0"},
 		{"Era 1 (4 ETC)", 5000001, 4e18, "4.0"},

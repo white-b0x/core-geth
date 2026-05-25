@@ -36,15 +36,15 @@ import (
 // activated at the given block number.
 func newEIP2935Config(forkBlock int64) *coregeth.CoreGethChainConfig {
 	return &coregeth.CoreGethChainConfig{
-		NetworkID:    1337,
-		Ethash:       new(ctypes.EthashConfig),
-		ChainID:      big.NewInt(1337),
-		EIP2FBlock:   big.NewInt(0),
-		EIP7FBlock:   big.NewInt(0),
-		EIP150Block:  big.NewInt(0),
-		EIP155Block:  big.NewInt(0),
-		EIP160FBlock: big.NewInt(0),
-		EIP161FBlock: big.NewInt(0),
+		NetworkID:     1337,
+		Ethash:        new(ctypes.EthashConfig),
+		ChainID:       big.NewInt(1337),
+		EIP2FBlock:    big.NewInt(0),
+		EIP7FBlock:    big.NewInt(0),
+		EIP150Block:   big.NewInt(0),
+		EIP155Block:   big.NewInt(0),
+		EIP160FBlock:  big.NewInt(0),
+		EIP161FBlock:  big.NewInt(0),
 		EIP170FBlock:  big.NewInt(0),
 		EIP140FBlock:  big.NewInt(0), // REVERT opcode (used by history contract)
 		EIP658FBlock:  big.NewInt(0),

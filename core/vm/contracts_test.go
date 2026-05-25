@@ -95,8 +95,8 @@ var allPrecompiles = map[common.Address]PrecompiledContract{
 	common.BytesToAddress([]byte{0x0f, 0x11}): &bls12381MapG1{},
 	common.BytesToAddress([]byte{0x0f, 0x12}): &bls12381MapG2{},
 	common.BytesToAddress([]byte{0x01, 0x00}): &p256Verify{},
-	common.BytesToAddress([]byte{0xf6}):       &bigModExp{eip2565: true, eip7883: true},           // EIP-7883
-	common.BytesToAddress([]byte{0xf7}):       &bigModExp{eip2565: true, eip7823: true},           // EIP-7823
+	common.BytesToAddress([]byte{0xf6}):       &bigModExp{eip2565: true, eip7883: true},                // EIP-7883
+	common.BytesToAddress([]byte{0xf7}):       &bigModExp{eip2565: true, eip7823: true},                // EIP-7823
 	common.BytesToAddress([]byte{0xf8}):       &bigModExp{eip2565: true, eip7823: true, eip7883: true}, // EIP-7823+7883
 }
 

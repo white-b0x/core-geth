@@ -266,7 +266,7 @@ func TestEIP7702ClearDelegation(t *testing.T) {
 			auth := types.SetCodeAuthorization{
 				ChainID: *uint256.MustFromBig(chainID),
 				Address: common.Address{}, // zero address = clear
-				Nonce:   1,               // nonce incremented from block 1
+				Nonce:   1,                // nonce incremented from block 1
 			}
 			signedAuth, err := types.SignSetCode(eip7702Key2, auth)
 			if err != nil {

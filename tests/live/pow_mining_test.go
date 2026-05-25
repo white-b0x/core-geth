@@ -46,7 +46,7 @@ func TestMordorDifficultyInRange(t *testing.T) {
 
 	// Mordor difficulty should be between 1M and 100T
 	// (it's typically in the 100M-10B range for a testnet)
-	minDifficulty := big.NewInt(1_000_000)       // 1M
+	minDifficulty := big.NewInt(1_000_000)                                            // 1M
 	maxDifficulty := new(big.Int).Mul(big.NewInt(100_000_000_000_000), big.NewInt(1)) // 100T
 
 	if difficulty.Cmp(minDifficulty) < 0 {
@@ -221,7 +221,7 @@ func TestETCMainnetDifficultyRange(t *testing.T) {
 
 	// ETC mainnet difficulty should be between 100B and 100P
 	// (typically in the 1T-100T range)
-	minDifficulty := big.NewInt(100_000_000_000)                                        // 100B
+	minDifficulty := big.NewInt(100_000_000_000)                                         // 100B
 	maxDifficulty := new(big.Int).Mul(big.NewInt(100_000_000_000_000), big.NewInt(1000)) // 100P
 
 	if difficulty.Cmp(minDifficulty) < 0 {

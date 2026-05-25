@@ -53,8 +53,8 @@ const (
 	ETCGasLimit = 8_000_000
 
 	// Etchash epoch lengths
-	EpochLengthDefault   = 30_000
-	EpochLengthECIP1099  = 60_000
+	EpochLengthDefault  = 30_000
+	EpochLengthECIP1099 = 60_000
 )
 
 // Known genesis hashes

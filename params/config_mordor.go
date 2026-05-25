@@ -117,9 +117,9 @@ var (
 		ECIP1017EraRounds:        big.NewInt(2000000),
 		ECIP1010PauseBlock:       nil,
 		ECIP1010Length:           nil,
-		ECBP1100FBlock:           big.NewInt(2380000),              // ETA 29 Sept 2020, ~1500 UTC
-		ECBP1100DeactivateFBlock: big.NewInt(10_400_000),           // ETA 13 January 2024
-		ECBP1100ReactivateFBlock: big.NewInt(olympiaMordorBlock),   // Olympia reactivates MESS
+		ECBP1100FBlock:           big.NewInt(2380000),            // ETA 29 Sept 2020, ~1500 UTC
+		ECBP1100DeactivateFBlock: big.NewInt(10_400_000),         // ETA 13 January 2024
+		ECBP1100ReactivateFBlock: big.NewInt(olympiaMordorBlock), // Olympia reactivates MESS
 
 		OlympiaTreasuryAddress: &OlympiaTreasuryAddr, // ECIP-1112 (see olympia_treasury.go)
 

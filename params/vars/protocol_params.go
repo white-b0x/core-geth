@@ -64,14 +64,14 @@ var (
 const (
 	GenesisGasLimit uint64 = 4712388            // Gas limit of the Genesis block.
 	MaxGasLimit     uint64 = 0x7fffffffffffffff // Maximum the gas limit (2^63-1).
-	MaxTxGas        uint64 = 1 << 24             // EIP-7825: Maximum transaction gas limit (2^24 = 16,777,216).
+	MaxTxGas        uint64 = 1 << 24            // EIP-7825: Maximum transaction gas limit (2^24 = 16,777,216).
 	// EIP-7934: Max RLP-encoded block size = 8 MiB (8,388,608 bytes).
 	// Derived from ETH's EL enforcement constant verbatim: MAX_BLOCK_SIZE (10 MiB) - BEACON_MARGIN (2 MiB).
 	// ETC omits all beacon/CL elements (ECIP-1121 deferred specs); the 2 MiB margin is an ETH CL
 	// safety buffer that does not apply to ETC PoW. We follow the EL enforcement constant as-is.
 	BlockRLPSizeCap uint64 = 10*1024*1024 - 2*1024*1024
-	TxAuthTupleGas  uint64 = 12_500            // EIP-7702: Per-authorization gas cost (for existing accounts after refund).
-	P256VerifyGas   uint64 = 6900              // EIP-7951: secp256r1 signature verification gas price.
+	TxAuthTupleGas  uint64 = 12_500 // EIP-7702: Per-authorization gas cost (for existing accounts after refund).
+	P256VerifyGas   uint64 = 6900   // EIP-7951: secp256r1 signature verification gas price.
 
 	ExpByteGas            uint64 = 10    // Times ceil(log256(exponent)) for the EXP instruction.
 	SloadGas              uint64 = 50    // Multiplied by the number of 32-byte words that are copied (round up) for any *COPY operation and added.

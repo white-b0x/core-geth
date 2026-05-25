@@ -54,7 +54,7 @@ func TestEIP7935AdversarialMinority(t *testing.T) {
 		final := simulateMixedMining(startLimit, honestTarget, adversaryTarget, 70, 10_000, seed)
 
 		// With 70% honest, equilibrium should be near 60M (within 5%)
-		low := honestTarget * 95 / 100  // 57M
+		low := honestTarget * 95 / 100   // 57M
 		high := honestTarget * 105 / 100 // 63M
 
 		if final < low || final > high {
@@ -83,7 +83,7 @@ func TestEIP7935AdversarialMajority(t *testing.T) {
 		// limit is below their target, but above the lower target, the
 		// adversary pushes down while honest pushes up — net zero.
 		// Below the lower target, both push up. So equilibrium ≈ lower target.
-		low := adversaryTarget * 90 / 100  // 27M
+		low := adversaryTarget * 90 / 100   // 27M
 		high := adversaryTarget * 120 / 100 // 36M
 
 		if final < low || final > high {

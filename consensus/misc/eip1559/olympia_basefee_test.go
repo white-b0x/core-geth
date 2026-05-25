@@ -37,12 +37,12 @@ func newETCTestConfig(olympiaBlock uint64) *coregeth.CoreGethChainConfig {
 	gasTarget8M := uint64(8_000_000)
 	gasTarget60M := uint64(60_000_000)
 	return &coregeth.CoreGethChainConfig{
-		Ethash:              new(ctypes.EthashConfig),
-		EIP3855FBlock:       big.NewInt(int64(spiralBlock)),  // Spiral (PUSH0)
-		EIP1559FBlock:       big.NewInt(int64(olympiaBlock)), // Olympia
-		EIP3198FBlock:       big.NewInt(int64(olympiaBlock)), // BASEFEE opcode
-		SpiralGasTarget:     &gasTarget8M,
-		OlympiaGasTarget:    &gasTarget60M,
+		Ethash:           new(ctypes.EthashConfig),
+		EIP3855FBlock:    big.NewInt(int64(spiralBlock)),  // Spiral (PUSH0)
+		EIP1559FBlock:    big.NewInt(int64(olympiaBlock)), // Olympia
+		EIP3198FBlock:    big.NewInt(int64(olympiaBlock)), // BASEFEE opcode
+		SpiralGasTarget:  &gasTarget8M,
+		OlympiaGasTarget: &gasTarget60M,
 	}
 }
 

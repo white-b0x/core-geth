@@ -22,8 +22,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/params/types/ctypes"
 	"github.com/ethereum/go-ethereum/params/types/coregeth"
+	"github.com/ethereum/go-ethereum/params/types/ctypes"
 	"github.com/ethereum/go-ethereum/params/vars"
 )
 
@@ -176,45 +176,45 @@ func TestDifficultyECIP1010BombPause(t *testing.T) {
 // epoch length from 30,000 to 60,000 blocks.
 func TestDifficultyECIP1099EpochLength(t *testing.T) {
 	cases := []struct {
-		name        string
-		block       uint64
-		ecip1099    *uint64
+		name         string
+		block        uint64
+		ecip1099     *uint64
 		wantEpochLen uint64
 	}{
 		{
-			name:        "pre-ECIP1099 default epoch",
-			block:       1_000_000,
-			ecip1099:    nil,
+			name:         "pre-ECIP1099 default epoch",
+			block:        1_000_000,
+			ecip1099:     nil,
 			wantEpochLen: 30000,
 		},
 		{
-			name:        "Classic pre-ECIP1099 (block < 11.7M)",
-			block:       11_699_999,
-			ecip1099:    uint64Ptr(11_700_000),
+			name:         "Classic pre-ECIP1099 (block < 11.7M)",
+			block:        11_699_999,
+			ecip1099:     uint64Ptr(11_700_000),
 			wantEpochLen: 30000,
 		},
 		{
-			name:        "Classic at ECIP1099 (block = 11.7M)",
-			block:       11_700_000,
-			ecip1099:    uint64Ptr(11_700_000),
+			name:         "Classic at ECIP1099 (block = 11.7M)",
+			block:        11_700_000,
+			ecip1099:     uint64Ptr(11_700_000),
 			wantEpochLen: 60000,
 		},
 		{
-			name:        "Classic post-ECIP1099",
-			block:       15_000_000,
-			ecip1099:    uint64Ptr(11_700_000),
+			name:         "Classic post-ECIP1099",
+			block:        15_000_000,
+			ecip1099:     uint64Ptr(11_700_000),
 			wantEpochLen: 60000,
 		},
 		{
-			name:        "Mordor at ECIP1099 (block = 2.52M)",
-			block:       2_520_000,
-			ecip1099:    uint64Ptr(2_520_000),
+			name:         "Mordor at ECIP1099 (block = 2.52M)",
+			block:        2_520_000,
+			ecip1099:     uint64Ptr(2_520_000),
 			wantEpochLen: 60000,
 		},
 		{
-			name:        "Mordor pre-ECIP1099",
-			block:       2_519_999,
-			ecip1099:    uint64Ptr(2_520_000),
+			name:         "Mordor pre-ECIP1099",
+			block:        2_519_999,
+			ecip1099:     uint64Ptr(2_520_000),
 			wantEpochLen: 30000,
 		},
 	}
@@ -279,14 +279,14 @@ func TestDifficultyClassicVsMordorConfigs(t *testing.T) {
 			name:   "Classic",
 			config: params.ClassicChainConfig,
 			blocks: []int64{
-				1,              // Pre-Homestead
-				1_150_000,      // Homestead
-				3_000_000,      // ECIP-1010 pause
-				5_900_000,      // ECIP-1041 (bomb removal)
-				8_772_000,      // Atlantis (Byzantium-eq, EIP-100B)
-				10_500_839,     // Phoenix (Istanbul-eq)
-				13_189_133,     // Magneto (Berlin-eq)
-				19_250_000,     // Spiral (Shanghai-eq)
+				1,          // Pre-Homestead
+				1_150_000,  // Homestead
+				3_000_000,  // ECIP-1010 pause
+				5_900_000,  // ECIP-1041 (bomb removal)
+				8_772_000,  // Atlantis (Byzantium-eq, EIP-100B)
+				10_500_839, // Phoenix (Istanbul-eq)
+				13_189_133, // Magneto (Berlin-eq)
+				19_250_000, // Spiral (Shanghai-eq)
 			},
 		},
 		{
@@ -294,12 +294,12 @@ func TestDifficultyClassicVsMordorConfigs(t *testing.T) {
 			config: params.MordorChainConfig,
 			blocks: []int64{
 				1,
-				301_243,    // Atlantis
-				999_983,    // Agharta
-				2_520_000,  // ECIP-1099 (Etchash)
-				3_985_893,  // Magneto
-				5_520_000,  // Mystique
-				9_957_000,  // Spiral
+				301_243,   // Atlantis
+				999_983,   // Agharta
+				2_520_000, // ECIP-1099 (Etchash)
+				3_985_893, // Magneto
+				5_520_000, // Mystique
+				9_957_000, // Spiral
 			},
 		},
 	}

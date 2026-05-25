@@ -111,16 +111,16 @@ func TestETCClassicKnownForkBlocks(t *testing.T) {
 		got  *big.Int
 		want int64
 	}{
-		"Homestead":  {ClassicChainConfig.EIP2FBlock, 1150000},
-		"EIP-155":    {ClassicChainConfig.EIP155Block, 3000000},
-		"ECIP-1017":  {ClassicChainConfig.ECIP1017FBlock, 5000000},
-		"Atlantis":   {ClassicChainConfig.EIP161FBlock, 8772000},
-		"Agharta":    {ClassicChainConfig.EIP145FBlock, 9573000},
-		"Phoenix":    {ClassicChainConfig.EIP152FBlock, 10500839},
-		"ECIP-1099":  {ClassicChainConfig.ECIP1099FBlock, 11700000},
-		"Magneto":    {ClassicChainConfig.EIP2565FBlock, 13189133},
-		"Mystique":   {ClassicChainConfig.EIP3529FBlock, 14525000},
-		"Spiral":     {ClassicChainConfig.EIP3651FBlock, 19250000},
+		"Homestead": {ClassicChainConfig.EIP2FBlock, 1150000},
+		"EIP-155":   {ClassicChainConfig.EIP155Block, 3000000},
+		"ECIP-1017": {ClassicChainConfig.ECIP1017FBlock, 5000000},
+		"Atlantis":  {ClassicChainConfig.EIP161FBlock, 8772000},
+		"Agharta":   {ClassicChainConfig.EIP145FBlock, 9573000},
+		"Phoenix":   {ClassicChainConfig.EIP152FBlock, 10500839},
+		"ECIP-1099": {ClassicChainConfig.ECIP1099FBlock, 11700000},
+		"Magneto":   {ClassicChainConfig.EIP2565FBlock, 13189133},
+		"Mystique":  {ClassicChainConfig.EIP3529FBlock, 14525000},
+		"Spiral":    {ClassicChainConfig.EIP3651FBlock, 19250000},
 	}
 	for name, tc := range cases {
 		if tc.got == nil {

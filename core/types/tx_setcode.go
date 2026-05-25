@@ -174,19 +174,19 @@ func (tx *SetCodeTx) copy() TxData {
 }
 
 // accessors for innerTx.
-func (tx *SetCodeTx) txType() byte           { return SetCodeTxType }
-func (tx *SetCodeTx) chainID() *big.Int      { return tx.ChainID.ToBig() }
-func (tx *SetCodeTx) accessList() AccessList  { return tx.AccessList }
-func (tx *SetCodeTx) data() []byte            { return tx.Data }
-func (tx *SetCodeTx) gas() uint64             { return tx.Gas }
-func (tx *SetCodeTx) gasFeeCap() *big.Int     { return tx.GasFeeCap.ToBig() }
-func (tx *SetCodeTx) gasTipCap() *big.Int     { return tx.GasTipCap.ToBig() }
-func (tx *SetCodeTx) gasPrice() *big.Int      { return tx.GasFeeCap.ToBig() }
-func (tx *SetCodeTx) value() *big.Int         { return tx.Value.ToBig() }
-func (tx *SetCodeTx) nonce() uint64           { return tx.Nonce }
-func (tx *SetCodeTx) to() *common.Address     { tmp := tx.To; return &tmp }
-func (tx *SetCodeTx) blobGas() uint64         { return 0 }
-func (tx *SetCodeTx) blobGasFeeCap() *big.Int { return nil }
+func (tx *SetCodeTx) txType() byte              { return SetCodeTxType }
+func (tx *SetCodeTx) chainID() *big.Int         { return tx.ChainID.ToBig() }
+func (tx *SetCodeTx) accessList() AccessList    { return tx.AccessList }
+func (tx *SetCodeTx) data() []byte              { return tx.Data }
+func (tx *SetCodeTx) gas() uint64               { return tx.Gas }
+func (tx *SetCodeTx) gasFeeCap() *big.Int       { return tx.GasFeeCap.ToBig() }
+func (tx *SetCodeTx) gasTipCap() *big.Int       { return tx.GasTipCap.ToBig() }
+func (tx *SetCodeTx) gasPrice() *big.Int        { return tx.GasFeeCap.ToBig() }
+func (tx *SetCodeTx) value() *big.Int           { return tx.Value.ToBig() }
+func (tx *SetCodeTx) nonce() uint64             { return tx.Nonce }
+func (tx *SetCodeTx) to() *common.Address       { tmp := tx.To; return &tmp }
+func (tx *SetCodeTx) blobGas() uint64           { return 0 }
+func (tx *SetCodeTx) blobGasFeeCap() *big.Int   { return nil }
 func (tx *SetCodeTx) blobHashes() []common.Hash { return nil }
 
 func (tx *SetCodeTx) effectiveGasPrice(dst *big.Int, baseFee *big.Int) *big.Int {

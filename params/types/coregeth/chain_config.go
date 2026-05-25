@@ -184,8 +184,8 @@ type CoreGethChainConfig struct {
 	ECIP1017EraRounds  *big.Int `json:"ecip1017EraRounds,omitempty"` // ECIP1017 era rounds
 	ECIP1080FBlock     *big.Int `json:"ecip1080FBlock,omitempty"`
 
-	ECIP1099FBlock           *big.Int `json:"ecip1099FBlock,omitempty"`            // ECIP1099 etchash HF block
-	ECBP1100FBlock           *big.Int `json:"ecbp1100FBlock,omitempty"`            // ECBP1100:MESS artificial finality
+	ECIP1099FBlock           *big.Int `json:"ecip1099FBlock,omitempty"`           // ECIP1099 etchash HF block
+	ECBP1100FBlock           *big.Int `json:"ecbp1100FBlock,omitempty"`           // ECBP1100:MESS artificial finality
 	ECBP1100DeactivateFBlock *big.Int `json:"ecbp1100DeactivateFBlock,omitempty"` // Deactivate ECBP1100:MESS artificial finality
 	ECBP1100ReactivateFBlock *big.Int `json:"ecbp1100ReactivateFBlock,omitempty"` // Reactivate ECBP1100:MESS at Olympia
 
