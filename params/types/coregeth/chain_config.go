@@ -303,6 +303,7 @@ type CoreGethChainConfig struct {
 	EIP2935FBlock *big.Int `json:"eip2935FBlock,omitempty"` // EIP-2935: Historical block hashes from state
 	EIP7702FBlock *big.Int `json:"eip7702FBlock,omitempty"` // EIP-7702: Set EOA account code
 	EIP7934FBlock *big.Int `json:"eip7934FBlock,omitempty"` // EIP-7934: RLP execution block size limit
+	EIP7939FBlock *big.Int `json:"eip7939FBlock,omitempty"` // EIP-7939: CLZ opcode
 }
 
 // String implements the fmt.Stringer interface.

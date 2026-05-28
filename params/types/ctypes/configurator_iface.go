@@ -324,6 +324,10 @@ type ProtocolSpecifier interface {
 	// GetEIP7934Transition implements EIP-7934: RLP execution block size limit - https://eips.ethereum.org/EIPS/eip-7934
 	GetEIP7934Transition() *uint64
 	SetEIP7934Transition(n *uint64) error
+
+	// GetEIP7939Transition implements EIP-7939: CLZ (Count Leading Zeros) opcode - https://eips.ethereum.org/EIPS/eip-7939
+	GetEIP7939Transition() *uint64
+	SetEIP7939Transition(n *uint64) error
 }
 
 type Forker interface {

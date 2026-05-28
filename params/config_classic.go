@@ -124,12 +124,13 @@ var (
 		EIP2537FBlock:          big.NewInt(olympiaMainnetBlock), // BLS12-381 precompiles
 		EIP7823FBlock:          big.NewInt(olympiaMainnetBlock), // MODEXP upper bounds (1024 bytes)
 		EIP7883FBlock:          big.NewInt(olympiaMainnetBlock), // MODEXP gas cost increase
-		EIP7825FBlock:          big.NewInt(olympiaMainnetBlock), // TX gas limit cap (30M)
+		EIP7825FBlock:          big.NewInt(olympiaMainnetBlock), // TX gas limit cap (2^24 = 16,777,216)
 		EIP7623FBlock:          big.NewInt(olympiaMainnetBlock), // Floor data gas cost
 		EIP7951FBlock:          big.NewInt(olympiaMainnetBlock), // secp256r1 P256VERIFY precompile
 		EIP2935FBlock:          big.NewInt(olympiaMainnetBlock), // Historical block hashes from state
 		EIP7702FBlock:          big.NewInt(olympiaMainnetBlock), // Set EOA account code
 		EIP7934FBlock:          big.NewInt(olympiaMainnetBlock), // RLP execution block size limit
+		EIP7939FBlock:          big.NewInt(olympiaMainnetBlock), // CLZ opcode
 		OlympiaTreasuryAddress: &OlympiaTreasuryAddr,            // ECIP-1112 (see olympia_treasury.go)
 
 		RequireBlockHashes: map[uint64]common.Hash{

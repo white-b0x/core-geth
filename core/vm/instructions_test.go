@@ -202,6 +202,38 @@ func TestSAR(t *testing.T) {
 	testTwoOperandOp(t, tests, opSAR, "sar")
 }
 
+func TestCLZ(t *testing.T) {
+	// Test vectors from EIP-7939 spec: CLZ returns count of leading zero bits in a 256-bit word.
+	tests := []struct {
+		input    string // hex, 32 bytes
+		expected uint64
+	}{
+		{"0000000000000000000000000000000000000000000000000000000000000000", 256}, // zero → 256
+		{"8000000000000000000000000000000000000000000000000000000000000000", 0},   // MSB set → 0
+		{"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 0},   // all ones → 0
+		{"4000000000000000000000000000000000000000000000000000000000000000", 1},   // second bit set → 1
+		{"0000000000000000000000000000000000000000000000000000000000000001", 255}, // LSB only → 255
+		{"0100000000000000000000000000000000000000000000000000000000000000", 7},   // 0x01 in MSB byte → 7
+	}
+	var (
+		env            = NewEVM(BlockContext{}, TxContext{}, nil, params.TestChainConfig, Config{})
+		stack          = newstack()
+		evmInterpreter = NewEVMInterpreter(env)
+		pc             = uint64(0)
+	)
+	env.interpreter = evmInterpreter
+	for _, tc := range tests {
+		x := new(uint256.Int).SetBytes(common.Hex2Bytes(tc.input))
+		stack.push(x)
+		scope := &ScopeContext{nil, stack, nil}
+		opCLZ(&pc, evmInterpreter, scope)
+		got := stack.pop()
+		if !got.IsUint64() || got.Uint64() != tc.expected {
+			t.Errorf("CLZ(%s): got %s, want %d", tc.input, got.Hex(), tc.expected)
+		}
+	}
+}
+
 func TestAddMod(t *testing.T) {
 	var (
 		env            = NewEVM(BlockContext{}, TxContext{}, nil, params.TestChainConfig, Config{})

@@ -105,12 +105,13 @@ var (
 		EIP2537FBlock: big.NewInt(olympiaMordorBlock), // BLS12-381 precompiles
 		EIP7823FBlock: big.NewInt(olympiaMordorBlock), // MODEXP upper bounds (1024 bytes)
 		EIP7883FBlock: big.NewInt(olympiaMordorBlock), // MODEXP gas cost increase
-		EIP7825FBlock: big.NewInt(olympiaMordorBlock), // TX gas limit cap (30M)
+		EIP7825FBlock: big.NewInt(olympiaMordorBlock), // TX gas limit cap (2^24 = 16,777,216)
 		EIP7623FBlock: big.NewInt(olympiaMordorBlock), // Floor data gas cost
 		EIP7951FBlock: big.NewInt(olympiaMordorBlock), // secp256r1 P256VERIFY precompile
 		EIP2935FBlock: big.NewInt(olympiaMordorBlock), // Historical block hashes from state
 		EIP7702FBlock: big.NewInt(olympiaMordorBlock), // Set EOA account code
 		EIP7934FBlock: big.NewInt(olympiaMordorBlock), // RLP execution block size limit
+		EIP7939FBlock: big.NewInt(olympiaMordorBlock), // CLZ opcode
 
 		DisposalBlock:            big.NewInt(0),
 		ECIP1017FBlock:           big.NewInt(0),

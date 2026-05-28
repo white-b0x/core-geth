@@ -242,6 +242,9 @@ func instructionSetForConfig(config ctypes.ChainConfigurator, isPostMerge bool, 
 	if config.IsEnabled(config.GetEIP7702Transition, bn) {
 		enable7702(instructionSet) // EIP-7702 delegation-aware gas for CALL variants
 	}
+	if config.IsEnabled(config.GetEIP7939Transition, bn) {
+		enable7939(instructionSet) // EIP-7939 CLZ opcode
+	}
 
 	return validate(instructionSet)
 }

@@ -26,6 +26,7 @@ import (
 )
 
 var activators = map[int]func(*JumpTable){
+	7939: enable7939,
 	7702: enable7702,
 	5656: enable5656,
 	6780: enable6780,
@@ -332,5 +333,15 @@ func enable6780(jt *JumpTable) {
 		constantGas: vars.SelfdestructGasEIP150,
 		minStack:    minStack(1, 0),
 		maxStack:    maxStack(1, 0),
+	}
+}
+
+// enable7939 applies EIP-7939 (CLZ opcode — count leading zeros)
+func enable7939(jt *JumpTable) {
+	jt[CLZ] = &operation{
+		execute:     opCLZ,
+		constantGas: GasFastStep,
+		minStack:    minStack(1, 1),
+		maxStack:    maxStack(1, 1),
 	}
 }
