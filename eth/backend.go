@@ -266,6 +266,10 @@ func New(stack *node.Node, config *ethconfig.Config) (*Ethereum, error) {
 	if config.TxPool.Journal != "" {
 		config.TxPool.Journal = stack.ResolvePath(config.TxPool.Journal)
 	}
+	// ECIP-1122: override PriceLimit from chain config when set (ETC/Mordor = 1 gwei MIN_MINER_TIP).
+	if txLimit := eth.blockchain.Config().GetTxPoolPriceLimit(); txLimit != nil {
+		config.TxPool.PriceLimit = txLimit.Uint64()
+	}
 	legacyPool := legacypool.New(config.TxPool, eth.blockchain)
 
 	eth.txPool, err = txpool.New(config.TxPool.PriceLimit, eth.blockchain, []txpool.SubPool{legacyPool, blobPool})

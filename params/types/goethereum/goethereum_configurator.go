@@ -566,6 +566,14 @@ func (c *ChainConfig) SetBaseFeeMinValue(n *big.Int) error {
 	return nil
 }
 
+func (c *ChainConfig) GetTxPoolPriceLimit() *big.Int { return nil }
+func (c *ChainConfig) SetTxPoolPriceLimit(n *big.Int) error {
+	if n != nil {
+		return ctypes.ErrUnsupportedConfigFatal
+	}
+	return nil
+}
+
 // GetEIP2315Transition implements EIP2537.
 // This logic is written but not configured for any Ethereum-supported networks, yet.
 func (c *ChainConfig) GetEIP2315Transition() *uint64 {

@@ -140,7 +140,16 @@ func ValidateTransaction(tx *types.Transaction, head *types.Header, signer types
 		}
 	}
 	// Ensure the gasprice is high enough to cover the requirement of the calling pool
-	if tx.GasTipCapIntCmp(opts.MinTip) < 0 {
+	// ECIP-1122: use effective tip when baseFee is available (post-EIP-1559).
+	// effectiveTip = min(GasTipCap, GasFeeCap - baseFee). Pre-EIP-1559, fall back to raw GasTipCap.
+	// This closes the gap where rawTip = 1 wei but effectiveTip = 0 (e.g. maxFee = baseFee).
+	// Guard: when effectiveTip < 0 (maxFee < baseFee), the existing baseFee check handles rejection.
+	if head.BaseFee != nil {
+		effectiveTip := tx.EffectiveGasTipValue(head.BaseFee)
+		if effectiveTip != nil && effectiveTip.Sign() >= 0 && effectiveTip.Cmp(opts.MinTip) < 0 {
+			return fmt.Errorf("%w: effective tip %v, minimum needed %v", ErrUnderpriced, effectiveTip, opts.MinTip)
+		}
+	} else if tx.GasTipCapIntCmp(opts.MinTip) < 0 {
 		return fmt.Errorf("%w: gas tip cap %v, minimum needed %v", ErrUnderpriced, tx.GasTipCap(), opts.MinTip)
 	}
 	if tx.Type() == types.BlobTxType {

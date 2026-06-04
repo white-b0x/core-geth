@@ -164,6 +164,12 @@ type ProtocolSpecifier interface {
 	GetBaseFeeMinValue() *big.Int
 	SetBaseFeeMinValue(n *big.Int) error
 
+	// GetTxPoolPriceLimit returns the minimum effective miner tip (in wei) for tx pool admission,
+	// or nil to use the operator --txpool.pricelimit flag (1 wei upstream default).
+	// ETC Mainnet and Mordor set 1_000_000_000 (1 gwei) per ECIP-1122.
+	GetTxPoolPriceLimit() *big.Int
+	SetTxPoolPriceLimit(n *big.Int) error
+
 	GetEIP2315Transition() *uint64
 	SetEIP2315Transition(n *uint64) error
 

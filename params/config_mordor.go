@@ -123,7 +123,8 @@ var (
 		ECBP1100ReactivateFBlock: big.NewInt(olympiaMordorBlock), // Olympia reactivates MESS
 
 		OlympiaTreasuryAddress: &OlympiaTreasuryAddr,            // ECIP-1112 (see olympia_treasury.go)
-		BaseFeeMinValue:        big.NewInt(vars.InitialBaseFee), // ECIP-1111: 1 gwei floor, ETC mainnet + Mordor
+		BaseFeeMinValue:        big.NewInt(vars.InitialBaseFee), // ECIP-1111: 1 gwei baseFee floor
+		TxPoolPriceLimit:       big.NewInt(vars.InitialBaseFee), // ECIP-1122: 1 gwei MIN_MINER_TIP
 
 		RequireBlockHashes: map[uint64]common.Hash{
 			840013: common.HexToHash("0x2ceada2b191879b71a5bcf2241dd9bc50d6d953f1640e62f9c2cee941dc61c9d"),

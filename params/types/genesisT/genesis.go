@@ -1230,6 +1230,14 @@ func (g *Genesis) SetBaseFeeMinValue(n *big.Int) error {
 	return g.Config.SetBaseFeeMinValue(n)
 }
 
+func (g *Genesis) GetTxPoolPriceLimit() *big.Int {
+	return g.Config.GetTxPoolPriceLimit()
+}
+
+func (g *Genesis) SetTxPoolPriceLimit(n *big.Int) error {
+	return g.Config.SetTxPoolPriceLimit(n)
+}
+
 func (g *Genesis) String() string {
 	j, _ := json.MarshalIndent(g, "", "    ")
 	return "Genesis: " + string(j)

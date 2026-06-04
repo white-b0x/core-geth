@@ -299,6 +299,12 @@ type CoreGethChainConfig struct {
 	// per ECIP-1111 to prevent treasury revenue from decaying to zero under low utilization.
 	BaseFeeMinValue *big.Int `json:"baseFeeMinValue,omitempty"`
 
+	// TxPoolPriceLimit is the minimum effective miner tip (in wei) required for a transaction
+	// to enter the tx pool. nil = use the operator --txpool.pricelimit flag (1 wei default).
+	// ETC Mainnet and Mordor set 1_000_000_000 (1 gwei) per ECIP-1122: total MIN_GAS_PRICE =
+	// BaseFeeMinValue (1 gwei) + TxPoolPriceLimit (1 gwei) = 2 gwei.
+	TxPoolPriceLimit *big.Int `json:"txPoolPriceLimit,omitempty"`
+
 	// ECIP-1121 Olympia EIPs:
 	EIP7823FBlock *big.Int `json:"eip7823FBlock,omitempty"` // EIP-7823: Set upper bounds for MODEXP
 	EIP7883FBlock *big.Int `json:"eip7883FBlock,omitempty"` // EIP-7883: ModExp gas cost increase

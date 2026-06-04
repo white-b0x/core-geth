@@ -481,6 +481,15 @@ func (c *CoreGethChainConfig) SetBaseFeeMinValue(n *big.Int) error {
 	return nil
 }
 
+func (c *CoreGethChainConfig) GetTxPoolPriceLimit() *big.Int {
+	return c.TxPoolPriceLimit
+}
+
+func (c *CoreGethChainConfig) SetTxPoolPriceLimit(n *big.Int) error {
+	c.TxPoolPriceLimit = n
+	return nil
+}
+
 func (c *CoreGethChainConfig) GetEIP7823Transition() *uint64 {
 	return bigNewU64(c.EIP7823FBlock)
 }
