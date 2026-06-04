@@ -128,6 +128,11 @@ func CalcBaseFee(config ctypes.ChainConfigurator, parent *types.Header) *big.Int
 		}
 		baseFee := num.Sub(parent.BaseFee, num)
 
+		// Apply chain-configured baseFee floor per ECIP-1111.
+		// ETC Mainnet and Mordor Testnet set 1_000_000_000 (1 gwei); ETH returns nil (no floor).
+		if floor := config.GetBaseFeeMinValue(); floor != nil && baseFee.Cmp(floor) < 0 {
+			return new(big.Int).Set(floor)
+		}
 		return math.BigMax(baseFee, common.Big0)
 	}
 }

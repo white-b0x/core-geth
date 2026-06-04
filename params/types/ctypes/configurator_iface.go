@@ -158,6 +158,12 @@ type ProtocolSpecifier interface {
 	GetOlympiaGasTarget() *uint64
 	SetOlympiaGasTarget(n *uint64) error
 
+	// GetBaseFeeMinValue returns the minimum allowed baseFee (in wei) for EIP-1559 blocks,
+	// or nil if no floor is configured (ETH mainnet and other non-ETC chains).
+	// ETC Mainnet and Mordor Testnet set 1_000_000_000 (1 gwei) per ECIP-1111.
+	GetBaseFeeMinValue() *big.Int
+	SetBaseFeeMinValue(n *big.Int) error
+
 	GetEIP2315Transition() *uint64
 	SetEIP2315Transition(n *uint64) error
 

@@ -472,6 +472,15 @@ func (c *CoreGethChainConfig) SetOlympiaGasTarget(n *uint64) error {
 	return nil
 }
 
+func (c *CoreGethChainConfig) GetBaseFeeMinValue() *big.Int {
+	return c.BaseFeeMinValue
+}
+
+func (c *CoreGethChainConfig) SetBaseFeeMinValue(n *big.Int) error {
+	c.BaseFeeMinValue = n
+	return nil
+}
+
 func (c *CoreGethChainConfig) GetEIP7823Transition() *uint64 {
 	return bigNewU64(c.EIP7823FBlock)
 }

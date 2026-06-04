@@ -43,6 +43,17 @@ func newETCTestConfig(olympiaBlock uint64) *coregeth.CoreGethChainConfig {
 		EIP3198FBlock:    big.NewInt(int64(olympiaBlock)), // BASEFEE opcode
 		SpiralGasTarget:  &gasTarget8M,
 		OlympiaGasTarget: &gasTarget60M,
+		BaseFeeMinValue:  big.NewInt(int64(vars.InitialBaseFee)), // ECIP-1111: 1 gwei floor
+	}
+}
+
+// newETHTestConfig returns a chain config without a baseFee floor (ETH mainnet behaviour).
+func newETHTestConfig(eip1559Block uint64) *coregeth.CoreGethChainConfig {
+	return &coregeth.CoreGethChainConfig{
+		Ethash:        new(ctypes.EthashConfig),
+		EIP1559FBlock: big.NewInt(int64(eip1559Block)),
+		EIP3198FBlock: big.NewInt(int64(eip1559Block)),
+		// BaseFeeMinValue intentionally nil — no floor on ETH
 	}
 }
 
@@ -100,25 +111,21 @@ func TestBaseFeePreOlympia_FullyUsed(t *testing.T) {
 	}
 }
 
-// TestBaseFeeFirstOlympiaBlock verifies that the second Olympia block (parent IS
-// the first Olympia block, which carried InitialBaseFee and gasUsed=0) decreases
-// baseFee by exactly 1 wei (delta floor kicks in when parentBaseFee is tiny).
+// TestBaseFeeFirstOlympiaBlock verifies that when the parent is the first Olympia
+// block (baseFee=InitialBaseFee, gasUsed=0), the computed decrease is clamped to
+// InitialBaseFee by the ECIP-1111 floor. The raw decrease would be 875_000_000
+// (InitialBaseFee - InitialBaseFee/8), but the 1 gwei floor prevents it.
 func TestBaseFeeFirstOlympiaBlock(t *testing.T) {
 	const olympiaBlock = 100
 	cfg := newETCTestConfig(olympiaBlock)
-	// Parent is the first Olympia block: gasLimit=30M (post-activation target),
-	// gasUsed=0, baseFee=1 Gwei. Next baseFee should decrease.
+	// Parent is the first Olympia block: gasLimit=30M, gasUsed=0, baseFee=1 Gwei.
 	parent := olympiaHeader(olympiaBlock, 30_000_000, 0, new(big.Int).SetUint64(vars.InitialBaseFee))
 	got := CalcBaseFee(cfg, parent)
-	// gasTarget = 30M/2 = 15M; gasUsed(0) < gasTarget(15M) → decrease
-	// delta = max(1, InitialBaseFee * 15M / 15M / 8) = max(1, InitialBaseFee/8) = 125_000_000
-	// baseFee = InitialBaseFee - 125_000_000 = 875_000_000
-	want := new(big.Int).SetUint64(vars.InitialBaseFee - vars.InitialBaseFee/8)
+	// gasTarget = 30M/2 = 15M; gasUsed(0) < gasTarget(15M) → computed decrease to 875_000_000
+	// ECIP-1111 floor clamps result back to InitialBaseFee (1 gwei).
+	want := new(big.Int).SetUint64(vars.InitialBaseFee)
 	if got.Cmp(want) != 0 {
-		t.Fatalf("CalcBaseFee (second Olympia, empty) = %s, want %s", got, want)
-	}
-	if got.Cmp(new(big.Int).SetUint64(vars.InitialBaseFee)) >= 0 {
-		t.Fatal("baseFee should decrease on empty block")
+		t.Fatalf("CalcBaseFee (ETC, second Olympia, empty) = %s, want %s (ECIP-1111 floor)", got, want)
 	}
 }
 
@@ -160,35 +167,72 @@ func TestBaseFeeDecrease(t *testing.T) {
 	}
 }
 
-// TestBaseFeeDecaysTo0From1Wei verifies the Bug B fix: when baseFee = 1 wei and
-// gasUsed = 0, the delta is floored at 1 so baseFee decays to 0 (not stuck at 1).
-// Cross-client constant: baseFee reaches 0 in exactly 1 empty block from 1 wei.
-func TestBaseFeeDecaysTo0From1Wei(t *testing.T) {
+// TestBaseFeeFloorsAtInitialBaseFee verifies that on ETC chains the baseFee floor
+// clamps any decrease to InitialBaseFee (1 gwei) per ECIP-1111.
+// Note: Bug B (delta floor at 1) still applies — the decrease delta is computed
+// correctly; the chain-config floor then ensures the result >= InitialBaseFee.
+func TestBaseFeeFloorsAtInitialBaseFee(t *testing.T) {
 	const olympiaBlock = 100
 	cfg := newETCTestConfig(olympiaBlock)
 	gasLimit := uint64(30_000_000)
-	tinyBaseFee := big.NewInt(1) // 1 wei
+	tinyBaseFee := big.NewInt(1) // 1 wei — well below InitialBaseFee
 	parent := olympiaHeader(olympiaBlock, gasLimit, 0, tinyBaseFee)
 	got := CalcBaseFee(cfg, parent)
-	zero := new(big.Int)
-	if got.Cmp(zero) != 0 {
-		t.Fatalf("CalcBaseFee (baseFee=1 wei, empty block) = %s, want 0 — baseFee stuck at 1 wei (Bug B not fixed)", got)
+	floor := new(big.Int).SetUint64(vars.InitialBaseFee)
+	if got.Cmp(floor) < 0 {
+		t.Fatalf("CalcBaseFee (ETC, baseFee=1 wei) = %s, want >= %s (ECIP-1111 floor not applied)", got, floor)
+	}
+	if got.Cmp(floor) != 0 {
+		t.Fatalf("CalcBaseFee (ETC, baseFee=1 wei) = %s, want exactly %s (clamped to floor)", got, floor)
 	}
 }
 
-// TestBaseFeeNeverNegative verifies that 100 consecutive empty blocks never produce
-// a negative baseFee (arithmetic invariant).
-func TestBaseFeeNeverNegative(t *testing.T) {
+// TestBaseFeeNoFloorOnETH verifies that without a configured floor (ETH mainnet),
+// baseFee can decay to 0 — the Bug B delta-floor behaviour is preserved on ETH.
+func TestBaseFeeNoFloorOnETH(t *testing.T) {
+	const eip1559Block = 100
+	cfg := newETHTestConfig(eip1559Block)
+	// ETH uses DefaultElasticityMultiplier=2; no OlympiaGasTarget, use a simple gas limit.
+	gasLimit := uint64(18_000_000) // 2× 9M target
+	tinyBaseFee := big.NewInt(1)   // 1 wei
+	parent := olympiaHeader(eip1559Block, gasLimit, 0, tinyBaseFee)
+	got := CalcBaseFee(cfg, parent)
+	if got.Sign() != 0 {
+		t.Fatalf("CalcBaseFee (ETH, no floor, baseFee=1 wei) = %s, want 0", got)
+	}
+}
+
+// TestBaseFeeNeverBelowFloor verifies that 100 consecutive empty blocks on ETC
+// never produce a baseFee below InitialBaseFee (arithmetic invariant with floor).
+func TestBaseFeeNeverBelowFloor(t *testing.T) {
 	const olympiaBlock = 100
 	cfg := newETCTestConfig(olympiaBlock)
 	gasLimit := uint64(30_000_000)
 	baseFee := new(big.Int).SetUint64(vars.InitialBaseFee)
-	zero := new(big.Int)
+	floor := new(big.Int).SetUint64(vars.InitialBaseFee)
 	for i := 0; i < 100; i++ {
 		parent := olympiaHeader(uint64(olympiaBlock+i), gasLimit, 0, baseFee)
 		baseFee = CalcBaseFee(cfg, parent)
-		if baseFee.Cmp(zero) < 0 {
-			t.Fatalf("block %d: baseFee went negative: %s", olympiaBlock+i+1, baseFee)
+		if baseFee.Cmp(floor) < 0 {
+			t.Fatalf("block %d: baseFee %s fell below InitialBaseFee floor %s", olympiaBlock+i+1, baseFee, floor)
+		}
+	}
+}
+
+// TestBaseFeeSustainedEmpty1000 verifies that 1000 consecutive empty blocks on ETC
+// all produce exactly InitialBaseFee (1 gwei) — never below.
+func TestBaseFeeSustainedEmpty1000(t *testing.T) {
+	const olympiaBlock = 100
+	cfg := newETCTestConfig(olympiaBlock)
+	gasLimit := uint64(30_000_000)
+	baseFee := new(big.Int).SetUint64(vars.InitialBaseFee)
+	floor := new(big.Int).SetUint64(vars.InitialBaseFee)
+	for i := 0; i < 1000; i++ {
+		parent := olympiaHeader(uint64(olympiaBlock+i), gasLimit, 0, baseFee)
+		baseFee = CalcBaseFee(cfg, parent)
+		if baseFee.Cmp(floor) < 0 {
+			t.Fatalf("block %d: baseFee %s fell below InitialBaseFee floor %s after 1000 empty blocks",
+				olympiaBlock+i+1, baseFee, floor)
 		}
 	}
 }

@@ -294,6 +294,11 @@ type CoreGethChainConfig struct {
 	SpiralGasTarget  *uint64 `json:"spiralGasTarget,omitempty"`
 	OlympiaGasTarget *uint64 `json:"olympiaGasTarget,omitempty"`
 
+	// BaseFeeMinValue is the minimum allowed baseFee (in wei) for EIP-1559 blocks.
+	// nil = no floor (ETH mainnet default). ETC Mainnet and Mordor set 1_000_000_000 (1 gwei)
+	// per ECIP-1111 to prevent treasury revenue from decaying to zero under low utilization.
+	BaseFeeMinValue *big.Int `json:"baseFeeMinValue,omitempty"`
+
 	// ECIP-1121 Olympia EIPs:
 	EIP7823FBlock *big.Int `json:"eip7823FBlock,omitempty"` // EIP-7823: Set upper bounds for MODEXP
 	EIP7883FBlock *big.Int `json:"eip7883FBlock,omitempty"` // EIP-7883: ModExp gas cost increase

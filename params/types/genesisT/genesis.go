@@ -1222,6 +1222,14 @@ func (g *Genesis) SetOlympiaGasTarget(n *uint64) error {
 	return g.Config.SetOlympiaGasTarget(n)
 }
 
+func (g *Genesis) GetBaseFeeMinValue() *big.Int {
+	return g.Config.GetBaseFeeMinValue()
+}
+
+func (g *Genesis) SetBaseFeeMinValue(n *big.Int) error {
+	return g.Config.SetBaseFeeMinValue(n)
+}
+
 func (g *Genesis) String() string {
 	j, _ := json.MarshalIndent(g, "", "    ")
 	return "Genesis: " + string(j)

@@ -132,6 +132,7 @@ var (
 		EIP7934FBlock:          big.NewInt(olympiaMainnetBlock), // RLP execution block size limit
 		EIP7939FBlock:          big.NewInt(olympiaMainnetBlock), // CLZ opcode
 		OlympiaTreasuryAddress: &OlympiaTreasuryAddr,            // ECIP-1112 (see olympia_treasury.go)
+		BaseFeeMinValue:        big.NewInt(vars.InitialBaseFee), // ECIP-1111: 1 gwei floor, ETC mainnet + Mordor
 
 		RequireBlockHashes: map[uint64]common.Hash{
 			1920000: common.HexToHash("0x94365e3a8c0b35089c1d1195081fe7489b528a84b22199c916180db8b28ade7f"),
