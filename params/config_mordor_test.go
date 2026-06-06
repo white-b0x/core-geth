@@ -5,23 +5,10 @@ import (
 	"testing"
 )
 
-func TestClassicDAO(t *testing.T) {
-	blockNumbers := []*big.Int{
-		big.NewInt(0),
-		big.NewInt(1_920_000),
-		big.NewInt(10_000_000),
-	}
-	for _, bn := range blockNumbers {
-		if ClassicChainConfig.IsEnabled(ClassicChainConfig.GetEthashEIP779Transition, bn) {
-			t.Fatal("bad")
-		}
-	}
-}
-
-// TestOlympiaCoordination_ClassicMESS verifies ECIP-1122 Section 3: MESS re-activation
-// block must equal the Olympia (EIP-1559) activation block on ETC mainnet.
-func TestOlympiaCoordination_ClassicMESS(t *testing.T) {
-	cfg := ClassicChainConfig
+// TestOlympiaCoordination_MordorMESS verifies ECIP-1122 Section 3: MESS re-activation
+// block must equal the Olympia (EIP-1559) activation block on Mordor testnet.
+func TestOlympiaCoordination_MordorMESS(t *testing.T) {
+	cfg := MordorChainConfig
 
 	reactivate := cfg.GetECBP1100ReactivateTransition()
 	eip1559 := cfg.GetEIP1559Transition()
@@ -38,7 +25,7 @@ func TestOlympiaCoordination_ClassicMESS(t *testing.T) {
 	}
 
 	// Spiral era (post-deactivation, pre-Olympia): MESS must not be reactivated yet.
-	spiralBlock := big.NewInt(20_000_000) // between deactivation (19,250,000) and Olympia
+	spiralBlock := big.NewInt(11_000_000) // between deactivation (10,400,000) and Olympia
 	if cfg.IsEnabled(cfg.GetECBP1100ReactivateTransition, spiralBlock) {
 		t.Errorf("MESS should not be reactivated during Spiral era at block %d", spiralBlock)
 	}
