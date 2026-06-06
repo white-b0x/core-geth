@@ -71,11 +71,11 @@ func VerifyEIP1559Header(config ctypes.ChainConfigurator, parent, header *types.
 	if err := misc.VerifyGaslimit(parentGasLimit, header.GasLimit); err != nil {
 		return err
 	}
-	// ECIP-1122 SHOULD: warn if a peer block's gas limit is below the network floor.
+	// ECIP-1122 SHOULD: warn if a peer block's gas limit is below the network gas limit target.
 	// The block is still valid — miners are not required to hit the target — but
-	// operators should know when a peer is mining below the fork-scheduled floor.
-	if forkFloor := ForkGasTarget(config, header.Number); forkFloor != nil && header.GasLimit < *forkFloor {
-		log.Warn("Peer block gas limit below network floor", "block", header.Number, "gasLimit", header.GasLimit, "floor", *forkFloor)
+	// operators should know when a peer is mining below the fork-scheduled gas limit target.
+	if forkTarget := ForkGasTarget(config, header.Number); forkTarget != nil && header.GasLimit < *forkTarget {
+		log.Warn("Peer block gas limit below network gas limit target", "block", header.Number, "gasLimit", header.GasLimit, "target", *forkTarget)
 	}
 	// Verify the header is not malformed
 	if header.BaseFee == nil {
