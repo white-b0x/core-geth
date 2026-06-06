@@ -25,6 +25,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/consensus/misc"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params/types/ctypes"
 	"github.com/ethereum/go-ethereum/params/vars"
 )
@@ -69,6 +70,12 @@ func VerifyEIP1559Header(config ctypes.ChainConfigurator, parent, header *types.
 	}
 	if err := misc.VerifyGaslimit(parentGasLimit, header.GasLimit); err != nil {
 		return err
+	}
+	// ECIP-1122 SHOULD: warn if a peer block's gas limit is below the network floor.
+	// The block is still valid — miners are not required to hit the target — but
+	// operators should know when a peer is mining below the fork-scheduled floor.
+	if forkFloor := ForkGasTarget(config, header.Number); forkFloor != nil && header.GasLimit < *forkFloor {
+		log.Warn("Peer block gas limit below network floor", "block", header.Number, "gasLimit", header.GasLimit, "floor", *forkFloor)
 	}
 	// Verify the header is not malformed
 	if header.BaseFee == nil {
