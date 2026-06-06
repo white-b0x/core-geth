@@ -235,3 +235,125 @@ func TestEIP7623FloorDataGasInactivePreFork(t *testing.T) {
 		t.Fatalf("expected tx below floor gas to be accepted pre-fork, got: %v", err)
 	}
 }
+
+// testPreOlympiaHeader returns a header with no BaseFee (pre-EIP-1559, pre-Olympia).
+func testPreOlympiaHeader(blockNum int64, gasLimit uint64) *types.Header {
+	return &types.Header{
+		Number:   big.NewInt(blockNum),
+		GasLimit: gasLimit,
+		// BaseFee intentionally absent — pre-Olympia blocks have no fee market
+	}
+}
+
+// etcValidationOpts returns ValidationOptions with MinTip = 1 gwei (ECIP-1122).
+func etcValidationOpts(config *coregeth.CoreGethChainConfig) *ValidationOptions {
+	return &ValidationOptions{
+		Config:  config,
+		Accept:  1<<types.LegacyTxType | 1<<types.AccessListTxType | 1<<types.DynamicFeeTxType,
+		MaxSize: 128 * 1024,
+		MinTip:  new(big.Int).SetUint64(vars.InitialBaseFee), // 1 gwei — ECIP-1122 MIN_MINER_TIP
+	}
+}
+
+// TestECIP1122MinTip_PreOlympia_RawGasPriceBelowMinTip verifies that pre-Olympia legacy
+// transactions with GasPrice < MIN_MINER_TIP (1 gwei) are rejected via the raw GasTipCap
+// branch (head.BaseFee == nil path). This mirrors fukuii's ECIP-1122 pool-admission gate.
+func TestECIP1122MinTip_PreOlympia_RawGasPriceBelowMinTip(t *testing.T) {
+	config := newValidationConfig(big.NewInt(1000)) // Olympia at future block
+	signer := types.MakeSigner(config, big.NewInt(0), 0)
+	head := testPreOlympiaHeader(0, 30_000_000) // pre-Olympia: no BaseFee
+	opts := etcValidationOpts(config)
+
+	tx := types.MustSignNewTx(valTestKey, signer, &types.LegacyTx{
+		Nonce:    0,
+		To:       &common.Address{0x01},
+		Value:    big.NewInt(0),
+		Gas:      21000,
+		GasPrice: big.NewInt(999_999_999), // 1 wei below 1 gwei
+	})
+
+	err := ValidateTransaction(tx, head, signer, opts)
+	if !errors.Is(err, ErrUnderpriced) {
+		t.Fatalf("pre-Olympia tx with GasPrice < MIN_MINER_TIP: expected ErrUnderpriced, got %v", err)
+	}
+}
+
+// TestECIP1122MinTip_PreOlympia_RawGasPriceAtMinTip verifies that pre-Olympia legacy
+// transactions with GasPrice == MIN_MINER_TIP (1 gwei) are accepted.
+func TestECIP1122MinTip_PreOlympia_RawGasPriceAtMinTip(t *testing.T) {
+	config := newValidationConfig(big.NewInt(1000))
+	signer := types.MakeSigner(config, big.NewInt(0), 0)
+	head := testPreOlympiaHeader(0, 30_000_000)
+	opts := etcValidationOpts(config)
+
+	tx := types.MustSignNewTx(valTestKey, signer, &types.LegacyTx{
+		Nonce:    0,
+		To:       &common.Address{0x01},
+		Value:    big.NewInt(0),
+		Gas:      21000,
+		GasPrice: new(big.Int).SetUint64(vars.InitialBaseFee), // exactly 1 gwei
+	})
+
+	err := ValidateTransaction(tx, head, signer, opts)
+	if err != nil {
+		t.Fatalf("pre-Olympia tx with GasPrice == MIN_MINER_TIP: expected acceptance, got %v", err)
+	}
+}
+
+// TestECIP1122MinTip_PostOlympia_ZeroEffectiveTip verifies that post-Olympia type-2
+// transactions whose effective tip equals zero are rejected. Effective tip = 0 occurs when
+// GasFeeCap == baseFee (user set no tip). This is the canonical "nonce-queue deadlock" tx.
+func TestECIP1122MinTip_PostOlympia_ZeroEffectiveTip(t *testing.T) {
+	config := newValidationConfig(big.NewInt(0)) // Olympia already active
+	signer := types.MakeSigner(config, big.NewInt(0), 0)
+	baseFee := new(big.Int).SetUint64(vars.InitialBaseFee) // 1 gwei
+	head := &types.Header{
+		Number:   big.NewInt(1),
+		GasLimit: 30_000_000,
+		BaseFee:  baseFee,
+	}
+	opts := etcValidationOpts(config)
+
+	tx := types.MustSignNewTx(valTestKey, signer, &types.DynamicFeeTx{
+		ChainID:   config.ChainID,
+		Nonce:     0,
+		To:        &common.Address{0x01},
+		Gas:       21000,
+		GasTipCap: big.NewInt(0),                                    // zero tip
+		GasFeeCap: new(big.Int).SetUint64(vars.InitialBaseFee),       // maxFee = baseFee exactly
+	})
+
+	err := ValidateTransaction(tx, head, signer, opts)
+	if !errors.Is(err, ErrUnderpriced) {
+		t.Fatalf("post-Olympia tx with effectiveTip=0 < MIN_MINER_TIP: expected ErrUnderpriced, got %v", err)
+	}
+}
+
+// TestECIP1122MinTip_PostOlympia_EffectiveTipAtMinTip verifies that post-Olympia type-2
+// transactions with effectiveTip == MIN_MINER_TIP (1 gwei) are accepted.
+// effectiveTip = min(GasTipCap, GasFeeCap - baseFee) = min(1 gwei, 2 gwei - 1 gwei) = 1 gwei.
+func TestECIP1122MinTip_PostOlympia_EffectiveTipAtMinTip(t *testing.T) {
+	config := newValidationConfig(big.NewInt(0))
+	signer := types.MakeSigner(config, big.NewInt(0), 0)
+	baseFee := new(big.Int).SetUint64(vars.InitialBaseFee) // 1 gwei
+	head := &types.Header{
+		Number:   big.NewInt(1),
+		GasLimit: 30_000_000,
+		BaseFee:  baseFee,
+	}
+	opts := etcValidationOpts(config)
+
+	tx := types.MustSignNewTx(valTestKey, signer, &types.DynamicFeeTx{
+		ChainID:   config.ChainID,
+		Nonce:     0,
+		To:        &common.Address{0x01},
+		Gas:       21000,
+		GasTipCap: new(big.Int).SetUint64(vars.InitialBaseFee),      // 1 gwei tip
+		GasFeeCap: new(big.Int).SetUint64(2 * vars.InitialBaseFee),  // 2 gwei cap (baseFee + tip)
+	})
+
+	err := ValidateTransaction(tx, head, signer, opts)
+	if err != nil {
+		t.Fatalf("post-Olympia tx with effectiveTip==MIN_MINER_TIP: expected acceptance, got %v", err)
+	}
+}

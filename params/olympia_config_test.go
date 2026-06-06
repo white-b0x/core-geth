@@ -109,3 +109,112 @@ func TestForkGasSchedule_Mordor(t *testing.T) {
 		t.Fatalf("Mordor OlympiaGasTarget = %v, want 60_000_000", olympia)
 	}
 }
+
+// TestMESSReactivationCoordination_ClassicMainnet verifies that ECBP-1100 (MESS) is wired
+// to the same olympiaMainnetBlock constant as EIP-1559. The three-phase MESS lifecycle:
+//
+//	Phase 1 — active (Thanos):      block >= 11_380_000
+//	Phase 2 — deactivated (Spiral): block >= 19_250_000
+//	Phase 3 — reactivated (Olympia): block >= olympiaMainnetBlock (== EIP1559FBlock)
+//
+// Using a single constant for both ECBP1100ReactivateFBlock and EIP1559FBlock ensures
+// MESS cannot be out-of-sync with the fee-market activation — matching fukuii's
+// MESSConfigParsingSpec which verifies reactivationBlock derives from olympia-block-number.
+func TestMESSReactivationCoordination_ClassicMainnet(t *testing.T) {
+	cfg := ClassicChainConfig
+
+	// Phase 1: MESS active (Thanos era)
+	for _, bn := range []int64{11_380_000, 15_000_000, 19_249_999} {
+		if !cfg.IsEnabled(cfg.GetECBP1100Transition, big.NewInt(bn)) {
+			t.Errorf("MESS should be active at block %d (Thanos era)", bn)
+		}
+	}
+
+	// Phase 2: MESS deactivated (Spiral gap)
+	for _, bn := range []int64{19_250_000, 19_250_001, 100_000_000} {
+		if cfg.IsEnabled(cfg.GetECBP1100Transition, big.NewInt(bn)) {
+			t.Errorf("MESS should be deactivated at block %d (Spiral gap)", bn)
+		}
+	}
+
+	// Phase 3: MESS reactivated at Olympia — must use the same constant as EIP-1559
+	olympia := big.NewInt(olympiaMainnetBlock)
+	if !cfg.IsEnabled(cfg.GetECBP1100Transition, olympia) {
+		t.Errorf("MESS should be reactivated at Olympia block %s (ECBP1100ReactivateFBlock)", olympia)
+	}
+	if !cfg.IsEnabled(cfg.GetEIP1559Transition, olympia) {
+		t.Errorf("EIP-1559 should be active at Olympia block %s", olympia)
+	}
+
+	// Coordination invariant: ECBP1100ReactivateFBlock must equal EIP1559FBlock
+	reactivate := cfg.GetECBP1100ReactivateTransition()
+	eip1559 := cfg.GetEIP1559Transition()
+	if reactivate == nil || eip1559 == nil {
+		t.Fatal("ECBP1100ReactivateFBlock or EIP1559FBlock is nil on ClassicChainConfig")
+	}
+	if *reactivate != *eip1559 {
+		t.Errorf("ECBP1100ReactivateFBlock (%d) != EIP1559FBlock (%d) — MESS and fee-market must activate together",
+			*reactivate, *eip1559)
+	}
+}
+
+// TestMESSReactivationCoordination_Mordor mirrors TestMESSReactivationCoordination_ClassicMainnet
+// for the Mordor testnet. MESS lifecycle on Mordor:
+//
+//	Phase 1 — active:       block >= 2_380_000
+//	Phase 2 — deactivated:  block >= 10_400_000
+//	Phase 3 — reactivated:  block >= olympiaMordorBlock
+func TestMESSReactivationCoordination_Mordor(t *testing.T) {
+	cfg := MordorChainConfig
+
+	// Phase 2: deactivated gap
+	for _, bn := range []int64{10_400_000, 50_000_000} {
+		if cfg.IsEnabled(cfg.GetECBP1100Transition, big.NewInt(bn)) {
+			t.Errorf("Mordor MESS should be deactivated at block %d (Spiral gap)", bn)
+		}
+	}
+
+	// Phase 3: reactivated at Olympia
+	olympia := big.NewInt(olympiaMordorBlock)
+	if !cfg.IsEnabled(cfg.GetECBP1100Transition, olympia) {
+		t.Errorf("Mordor MESS should be reactivated at Olympia block %s", olympia)
+	}
+
+	// Coordination invariant
+	reactivate := cfg.GetECBP1100ReactivateTransition()
+	eip1559 := cfg.GetEIP1559Transition()
+	if reactivate == nil || eip1559 == nil {
+		t.Fatal("ECBP1100ReactivateFBlock or EIP1559FBlock is nil on MordorChainConfig")
+	}
+	if *reactivate != *eip1559 {
+		t.Errorf("Mordor ECBP1100ReactivateFBlock (%d) != EIP1559FBlock (%d)", *reactivate, *eip1559)
+	}
+}
+
+// TestBaseFeeMinValueCoordination_ClassicMainnet verifies that BaseFeeMinValue (ECIP-1111)
+// is set on ClassicChainConfig and equals InitialBaseFee (1 gwei). The floor must be
+// present when EIP-1559 is active — having one without the other would corrupt treasury revenue.
+func TestBaseFeeMinValueCoordination_ClassicMainnet(t *testing.T) {
+	cfg := ClassicChainConfig
+	floor := cfg.GetBaseFeeMinValue()
+	if floor == nil {
+		t.Fatal("BaseFeeMinValue is nil on ClassicChainConfig — ECIP-1111 requires 1 gwei floor")
+	}
+	want := int64(1_000_000_000)
+	if floor.Int64() != want {
+		t.Fatalf("BaseFeeMinValue = %d, want %d (1 gwei)", floor.Int64(), want)
+	}
+}
+
+// TestBaseFeeMinValueCoordination_Mordor mirrors TestBaseFeeMinValueCoordination_ClassicMainnet
+// for Mordor testnet.
+func TestBaseFeeMinValueCoordination_Mordor(t *testing.T) {
+	cfg := MordorChainConfig
+	floor := cfg.GetBaseFeeMinValue()
+	if floor == nil {
+		t.Fatal("BaseFeeMinValue is nil on MordorChainConfig — ECIP-1111 requires 1 gwei floor")
+	}
+	if floor.Int64() != 1_000_000_000 {
+		t.Fatalf("Mordor BaseFeeMinValue = %d, want 1_000_000_000 (1 gwei)", floor.Int64())
+	}
+}

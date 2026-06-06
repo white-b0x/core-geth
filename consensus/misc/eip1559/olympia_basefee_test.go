@@ -236,3 +236,20 @@ func TestBaseFeeSustainedEmpty1000(t *testing.T) {
 		}
 	}
 }
+
+// TestETHBaseFeeDecaysBelowInitialBaseFee verifies that on ETH (BaseFeeMinValue=nil),
+// baseFee can decay below InitialBaseFee after a single empty block. This is the mirror
+// of TestBaseFeeNeverBelowFloor: where ETC is clamped at 1 gwei, ETH freely decreases.
+// It also documents that a nil BaseFeeMinValue means no ECIP-1111 floor — equivalent to
+// fukuii's MESSConfigParsingSpec noOlympia path where neither floor nor MESS reactivation applies.
+func TestETHBaseFeeDecaysBelowInitialBaseFee(t *testing.T) {
+	cfg := newETHTestConfig(0)
+	gasLimit := uint64(18_000_000) // 2× 9M target (ETH default elasticity)
+	// Start at InitialBaseFee — on ETC this would be clamped; on ETH it should decrease.
+	parent := olympiaHeader(0, gasLimit, 0, new(big.Int).SetUint64(vars.InitialBaseFee))
+	got := CalcBaseFee(cfg, parent)
+	floor := new(big.Int).SetUint64(vars.InitialBaseFee)
+	if got.Cmp(floor) >= 0 {
+		t.Fatalf("ETH baseFee after empty block = %s, want < %s (nil BaseFeeMinValue = no floor)", got, floor)
+	}
+}
