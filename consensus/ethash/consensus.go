@@ -33,6 +33,7 @@ import (
 	"github.com/ethereum/go-ethereum/consensus/misc/eip4844"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/params/mutations"
 	"github.com/ethereum/go-ethereum/params/types/ctypes"
@@ -614,19 +615,22 @@ func (ethash *Ethash) Prepare(chain consensus.ChainHeaderReader, header *types.H
 
 // Finalize implements consensus.Engine, accumulating the block and uncle rewards.
 func (ethash *Ethash) Finalize(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, withdrawals []*types.Withdrawal) {
-	// Accumulate any block and uncle rewards and commit the final state root
-	mutations.AccumulateRewards(chain.Config(), state, header, uncles)
-
-	// ECIP-1111: Credit basefee to Olympia Treasury instead of burning.
-	// baseFeeAmount = block.gasUsed * block.baseFee
+	// ECIP-1111: Credit baseFee * gasUsed to the Olympia treasury BEFORE miner and
+	// ommer rewards per ECIP-1111 spec ordering. baseFeeAmount = header.GasUsed * header.BaseFee.
 	if chain.Config().IsEnabled(chain.Config().GetEIP1559Transition, header.Number) {
-		if treasuryAddr := chain.Config().GetOlympiaTreasuryAddress(); treasuryAddr != nil && header.BaseFee != nil {
+		treasuryAddr := chain.Config().GetOlympiaTreasuryAddress()
+		if treasuryAddr == nil {
+			log.Error("Olympia active but treasury address is nil — baseFee revenue will not be credited", "block", header.Number)
+		} else if header.BaseFee != nil {
 			baseFee, _ := uint256.FromBig(header.BaseFee)
 			baseFeeAmount := new(uint256.Int).SetUint64(header.GasUsed)
 			baseFeeAmount.Mul(baseFeeAmount, baseFee)
 			state.AddBalance(*treasuryAddr, baseFeeAmount)
 		}
 	}
+
+	// Accumulate miner and ommer rewards after treasury credit (ECIP-1111 ordering).
+	mutations.AccumulateRewards(chain.Config(), state, header, uncles)
 }
 
 // FinalizeAndAssemble implements consensus.Engine, accumulating the block and
