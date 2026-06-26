@@ -293,16 +293,21 @@ s, err := graphql.ParseSchema(schema, &q, graphql.MaxDepth(maxQueryDepth))
 
 | Date | Event |
 |------|-------|
-| 10 June 2024 | Core-Geth v1.12.20 released at `etclabscore/core-geth` — final upstream release |
+| 10 June 2024 | Core-Geth v1.12.20 released at `etclabscore/core-geth` — final substantive release |
 | August 2024 | Go 1.21 reaches end-of-life; upstream receives no further toolchain security patches |
-| 23 January 2025 | Last upstream commit (GitHub Actions dependency bump — no code changes) |
-| February 2025 | Security disclosures sent to upstream maintainer — no response received |
-| February 2026 | CVE-2025-24883 and CVE-2026-22862 patched (`8e40b7e41`, `dc73f2e4f`) |
-| February 2026 | CVE-2026-26315 / CVE-2026-26314 patched (`2d3528803`) |
-| 4 March 2026 | Go toolchain upgraded 1.21 → 1.24 → 1.26 (`8385cf8e8`) |
-| 20 March 2026 | GraphQL depth limit and CVE-2026-22868 patched (`6c2d383fa`, `1419c5310`) |
-| 21 March 2026 | CVE-2026-26313 patched (`5d0cb8b34`) |
-| March 2026 | Core-Geth v1.13.0 released at `ethereumclassic/core-geth` — all CVEs patched |
+| 23 January 2025 | Last commit to `etclabscore/core-geth` (GitHub Actions dependency bump — no code changes) |
+| February 2025 | Private security disclosures sent to upstream maintainer — no response received |
+| 4 February 2026 | [Issue #692](https://github.com/etclabscore/core-geth/issues/692): Ledger security researcher publicly discloses CVE-2025-24883, CVE-2026-22862, CVE-2026-22868 — no upstream response |
+| February 2026 | CVE-2025-24883 and CVE-2026-22862 patched in `ethereumclassic/core-geth` (`8e40b7e41`, `dc73f2e4f`) |
+| February 2026 | CVE-2026-26315 / CVE-2026-26314 patched in `ethereumclassic/core-geth` (`2d3528803`) |
+| 4 March 2026 | Go toolchain upgraded 1.21 → 1.24 → 1.26 in `ethereumclassic/core-geth` (`8385cf8e8`) |
+| 18 March 2026 | Active ECIES crash-loop attack on ETC bootnodes; `etclabscore` releases [v1.12.21 ("Aegis")](https://github.com/etclabscore/core-geth/releases/tag/v1.12.21) — emergency P2P patch ([PR #694](https://github.com/etclabscore/core-geth/pull/694)) |
+| 18 March 2026 | @niooss-ledger [documents remaining unpatched CVEs](https://github.com/etclabscore/core-geth/pull/694#issuecomment-4089185353) after v1.12.21 |
+| 20 March 2026 | GraphQL depth limit and CVE-2026-22868 code path removed in `ethereumclassic/core-geth` (`6c2d383fa`, `1419c5310`) |
+| 21 March 2026 | CVE-2026-26313 patched in `ethereumclassic/core-geth` (`5d0cb8b34`) |
+| 28 March 2026 | `etclabscore` releases [v1.12.22 ("Hermes")](https://github.com/etclabscore/core-geth/releases/tag/v1.12.22) — remaining CVE backports under public pressure; Go 1.21 EOL unchanged |
+| March 2026 | Core-Geth v1.13.0 released at `ethereumclassic/core-geth` — all CVEs patched, Go 1.26, Olympia-ready |
+| May 2026 | ETC team privately alerts upstream developer with `ethereumclassic/core-geth` v1.13.0 codebase — no further activity at `etclabscore/core-geth` |
 
 ---
 
@@ -315,7 +320,7 @@ s, err := graphql.ParseSchema(schema, &q, graphql.MaxDepth(maxQueryDepth))
 | Remote crash via ECIES (CVE-2026-22862) | High | Any peer can crash a node during RLPx handshake with a malformed ECIES payload | Patched in v1.13.0 |
 | Remote OOM via RLP (CVE-2026-26313) | High | Any peer can OOM-crash a node with a single crafted P2P message | Patched in v1.13.0 |
 | Go Runtime EOL | High | 19 months on unsupported Go toolchain; runtime CVEs accumulated unpatched | Upgraded to Go 1.26 in v1.13.0 |
-| Single-maintainer upstream | High | No security response to disclosures; organisation effectively unmaintained | Client transferred to `ethereumclassic` org; multi-client Olympia architecture (Fukuii, Core-Geth, Besu) reduces single-client dependency |
+| Single-maintainer upstream | High | Private disclosures ignored for over a year; public CVE disclosure and an active network attack were required to force partial patches (v1.12.21/v1.12.22); Go toolchain and ETC modernisation not addressed | Client transferred to `ethereumclassic` org; multi-client Olympia architecture (Fukuii, Core-Geth, Besu) reduces single-client dependency |
 | Release gap (21 months) | Medium | Longest maintenance gap in ETC network history; window for chain divergence or targeted attack | Protocol-funded maintenance path via ECIP-1112 treasury |
 
 ---
@@ -347,7 +352,11 @@ Core-Geth v1.13.x is the final stable release series of this client. The ETC net
 ## References
 
 - Patched client: https://github.com/ethereumclassic/core-geth
-- Upstream (abandoned): https://github.com/etclabscore/core-geth
+- Upstream (maintenance mode): https://github.com/etclabscore/core-geth
+- Issue #692 — public CVE disclosure (Ledger security researcher): https://github.com/etclabscore/core-geth/issues/692
+- PR #694 — v1.12.21 emergency patch discussion and CVE analysis: https://github.com/etclabscore/core-geth/pull/694
+- v1.12.21 ("Aegis") release: https://github.com/etclabscore/core-geth/releases/tag/v1.12.21
+- v1.12.22 ("Hermes") release: https://github.com/etclabscore/core-geth/releases/tag/v1.12.22
 - Go vulnerability database: https://vuln.go.dev
 - ECIP-1111 (Olympia base): https://ecips.ethereumclassic.org/ECIPs/ecip-1111
 - ECIP-1112 (treasury funding): https://ecips.ethereumclassic.org/ECIPs/ecip-1112
