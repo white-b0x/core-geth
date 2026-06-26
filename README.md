@@ -2,9 +2,18 @@
 
 > A [go-ethereum](https://github.com/ethereum/go-ethereum) fork providing the production Ethereum Classic (ETC) execution client.
 
-CoreGeth is the maintained legacy execution client for the Ethereum Classic network. It supports all ETC hard forks from Frontier through Spiral, and implements the upcoming **Olympia** hard fork (ECIP-1111, ECIP-1112, ECIP-1121).
+---
 
-**Note:** CoreGeth is carried forward through the Olympia upgrade for network continuity and is scheduled to phase out as [Fukuii](https://github.com/chippr-robotics/fukuii) assumes the primary ETC client role in the Olympia era.
+> [!WARNING]
+> **CoreGeth entered maintenance mode in December 2024 and is scheduled for sunset after the Olympia upgrade.**
+>
+> Client maintenance was reduced to security-only in December 2024. The Ethereum Classic network is carrying CoreGeth forward through the Olympia upgrade for network continuity, after which it will be sunset. v1.13.x is the final stable release series. The network is migrating to **[Fukuii](https://fukuii.com)** ([github](https://github.com/chippr-robotics/fukuii)) as the only ETC-native execution client going forward — no further CoreGeth releases are planned beyond Olympia.
+>
+> **Node operators should migrate to [Fukuii](https://fukuii.com) now.** If migration is not immediately possible, upgrade to v1.13.0 as a minimum — the v1.12 series carries six unpatched CVEs including remote crash and key-oracle vulnerabilities. See the [March 2026 Security Audit](docs/audits/2026-03-security-audit.md) for details.
+
+---
+
+CoreGeth is the legacy execution client for the Ethereum Classic network. It supports all ETC hard forks from Frontier through Spiral and implements the **Olympia** hard fork (ECIP-1111, ECIP-1112, ECIP-1121).
 
 ## Supported Networks
 
@@ -53,11 +62,11 @@ The `main` branch implements the Olympia upgrade:
 
 ### Cross-Client Alignment
 
-| Client | Pre-Olympia | Post-Olympia | Role |
-|--------|-------------|--------------|------|
-| [core-geth](https://github.com/white-b0x/core-geth) | `pre-olympia` branch | `main` branch | Production client |
-| [Fukuii](https://github.com/chippr-robotics/fukuii) | `main` | `main` | Native ETC client (migration target) |
-| [Besu](https://github.com/white-b0x/besu) | `main` branch | `main` branch | Reference/testing client |
+| Client | Role |
+|--------|------|
+| [core-geth](https://github.com/ethereumclassic/core-geth) | Legacy — final release series v1.13 |
+| [Fukuii](https://fukuii.com) ([github](https://github.com/chippr-robotics/fukuii)) | Primary ETC client — migration target |
+| [Besu](https://github.com/hyperledger/besu) | Reference/testing client |
 
 ## Build
 ```bash
@@ -92,22 +101,27 @@ For testing with fake PoW (no DAG generation):
 
 ## Documentation
 
-- [CoreGeth docs](https://ethereumclassic.github.io/core-geth) — General documentation
+- [Security Audit — March 2026](docs/audits/2026-03-security-audit.md) — CVE details, remediation, migration guidance
 - [go-ethereum docs](https://geth.ethereum.org/docs/) — Upstream reference
+- [Fukuii](https://fukuii.com) — ETC's native client going forward
 
-## Security Patches
+## Security Audit — March 2026
 
-The `pre-olympia` branch includes 5 security patches applied before any feature work:
+v1.13.0 patches six CVEs and a GraphQL DoS that were unaddressed in the upstream `etclabscore/core-geth` for 21 months. The Go toolchain was also upgraded from EOL 1.21 to 1.26. Security remediation and the v1.13.0 release were carried out by [White B0x](https://whiteb0x.com).
 
 | CVE | Severity | Component |
 |-----|----------|-----------|
-| CVE-2026-26314 | High | secp256k1 coordinate validation |
-| CVE-2026-26315 | Moderate | ECIES invalid-curve attack |
-| CVE-2026-22862 | High | ECIES decrypt length |
-| CVE-2025-24883 | Moderate | UnmarshalPubkey curve check |
-| x/crypto, x/net | — | Dependency updates |
+| CVE-2026-26313 | High | P2P RLP item count memory exhaustion |
+| CVE-2026-26314 | High | secp256k1 coordinate field boundary bypass |
+| CVE-2026-26315 | High | ECIES GenerateShared invalid-curve attack |
+| CVE-2026-22862 | High | ECIES decrypt length undercheck (off-by-15) |
+| CVE-2025-24883 | High | UnmarshalPubkey missing IsOnCurve check |
+| CVE-2026-22868 | Medium | KZG blob proof verification DoS |
+| GraphQL depth DoS | Medium | Unbounded query nesting (fixed + graphql-go v1.9.0) |
 
-Nodes should rotate P2P keys after upgrading: `rm <datadir>/geth/nodekey`
+**Long-running nodes** should rotate the P2P key after upgrading: `rm <datadir>/geth/nodekey`
+
+Full details: [docs/audits/2026-03-security-audit.md](docs/audits/2026-03-security-audit.md)
 
 ## License
 
