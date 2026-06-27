@@ -1,28 +1,28 @@
 # Core-Geth Security Audit — March 2026
 
-**Client:** Core-Geth (Ethereum Classic)
-**Audit Date:** March 2026
-**Upstream Repository:** [github.com/etclabscore/core-geth](https://github.com/etclabscore/core-geth) (maintenance mode)
-**Upstream Last Substantive Release:** v1.12.20 (10 June 2024)
-**Upstream Emergency Patches:** [v1.12.21](https://github.com/etclabscore/core-geth/releases/tag/v1.12.21) (18 March 2026) · [v1.12.22](https://github.com/etclabscore/core-geth/releases/tag/v1.12.22) (28 March 2026) — CVE-only backports; Go 1.21 EOL toolchain unchanged
-**Patched Repository:** [github.com/ethereumclassic/core-geth](https://github.com/ethereumclassic/core-geth)
-**Patched Release:** v1.13.0
-**Patched By:** [White B0x](https://whiteb0x.com)
-**Auditors:** ETC Core Development Team (cross-client Olympia testing)
+**Client:** Core-Geth (Ethereum Classic)  
+**Audit Date:** March 2026  
+**Upstream Repository:** [github.com/etclabscore/core-geth](https://github.com/etclabscore/core-geth) (maintenance mode)  
+**Upstream Last Substantive Release:** v1.12.20 (10 June 2024)  
+**Upstream Emergency Patches:** [v1.12.21](https://github.com/etclabscore/core-geth/releases/tag/v1.12.21) (18 March 2026) · [v1.12.22](https://github.com/etclabscore/core-geth/releases/tag/v1.12.22) (28 March 2026) — CVE-only backports; Go 1.21 EOL toolchain unchanged  
+**Patched Repository:** [github.com/ethereumclassic/core-geth](https://github.com/ethereumclassic/core-geth)  
+**Upcoming Release:** v1.13.0 (pending Olympia activation)  
+**Patched By:** [White B0x](https://whiteb0x.com)  
+**Auditors:** Ethereum Classic Core Developers (cross-client Olympia testing)
 
 ---
 
 ## Executive Summary
 
-During cross-client testing for the Olympia network upgrade, the ETC Core team identified that `etclabscore/core-geth` — the primary Ethereum Classic execution client — had received no security maintenance since June 2024, a 21-month gap. Six CVEs were found unpatched, spanning cryptographic key validation, P2P protocol memory exhaustion, and a GraphQL DoS vector. The Go toolchain underpinning the client had also reached end-of-life in August 2024, exposing all deployed nodes to unpatched runtime vulnerabilities for 19 months.
+During cross-client testing for the Olympia network upgrade, the Ethereum Classic Core Developers identified that `etclabscore/core-geth` — the primary Ethereum Classic execution client — had received no security maintenance since June 2024, a 21-month gap. Six CVEs were found unpatched, spanning cryptographic key validation, P2P protocol memory exhaustion, and a GraphQL DoS vector. The Go toolchain underpinning the client had also reached end-of-life in August 2024, exposing all deployed nodes to unpatched runtime vulnerabilities for 19 months.
 
-Disclosures to the upstream maintainer in early 2025 received no response. A public security disclosure by a Ledger security researcher in February 2026 likewise received no response until an active attack on ETC bootnodes in March 2026 forced emergency patches (v1.12.21 and v1.12.22 at `etclabscore/core-geth`). Those upstream patches addressed the CVE backports but left the client on the Go 1.21 EOL toolchain with no ETC-specific modernisation. The comprehensive remediation — Go 1.26 upgrade, ETC network tooling, Olympia readiness, and all CVE fixes — was carried out by [White B0x](https://whiteb0x.com) and released as v1.13.0 under the `ethereumclassic` GitHub organisation.
+Disclosures to the upstream maintainer [@diega](https://github.com/diega) in early 2025 received no response. At the time, [@diega](https://github.com/diega) was employed by ETC Cooperative as a paid maintainer at a [compensation package exceeding $200,000 per year](https://etccooperative.org/filings) — the sole person with merge access and release authority over the client. A public security disclosure by a Ledger security researcher in February 2026 likewise received no response until an active attack on ETC bootnodes in March 2026 forced emergency patches (v1.12.21 and v1.12.22 at `etclabscore/core-geth`). Those upstream patches addressed the CVE backports but left the client on the Go 1.21 EOL toolchain with no ETC-specific modernisation. The comprehensive remediation — Go 1.26 upgrade, ETC network tooling, Olympia readiness, and all CVE fixes — was carried out by [White B0x](https://whiteb0x.com). The security patches were subsequently ported without attribution into [@diega](https://github.com/diega)'s v1.12.22 emergency release. The full remediation will be released as v1.13.0 under the `ethereumclassic` GitHub organisation in preparation for the Olympia network upgrade — the final release series of Core-Geth before the network transitions to [Fukuii](https://fukuii.com), Ethereum Classic's only native client.
 
 ---
 
 ## Background
 
-Cross-client interoperability testing for the Olympia hard fork (ECIP-1111/1112/1121/1122) surfaced the maintenance gap in early 2026. The ETC core team's review of the go-ethereum security advisory database and Go vulnerability database against the v1.12.20 codebase found all six CVEs unpatched. The security remediation, Go toolchain upgrade, and v1.13.0 release were carried out by [White B0x](https://whiteb0x.com) under the `ethereumclassic` GitHub organisation.
+Cross-client interoperability testing for the Olympia network upgrade (ECIP-1111/1112/1121/1122) surfaced the Core-Geth maintenance gap in early 2026. The Ethereum Classic Core Developers' review of the go-ethereum security advisory database and Go vulnerability database against the v1.12.20 codebase found all six CVEs unpatched. The security remediation and Go toolchain upgrade were carried out by [White B0x](https://whiteb0x.com) under the `ethereumclassic` GitHub organisation. A subset of those patches were subsequently ported without attribution into the `etclabscore/core-geth` v1.12.22 emergency release. The provenance is confirmed by the novel adaptations: two of the fixes (CVE-2026-26313 and CVE-2026-26314) required original implementation work — the upstream go-ethereum commits could not be cleanly cherry-picked due to structural divergence. Those novel implementations first appeared in White B0x's public PRs on 20–21 March 2026 and appear identically in v1.12.22 seven days later. The full remediation — including Go 1.26, ETC-specific network tooling, and Olympia readiness — will be released as v1.13.0.
 
 ### Disclosure Timeline
 
@@ -42,10 +42,10 @@ Cross-client interoperability testing for the Olympia hard fork (ECIP-1111/1112/
 | 18 March 2026 | Active attack on ETC bootnodes — ECIES handshake crash-loop (`crypto/ecies.symDecrypt` panic) exploited in production; [@diega](https://github.com/diega) releases [v1.12.21](https://github.com/etclabscore/core-geth/releases/tag/v1.12.21) ("Aegis") as an emergency patch ([PR #694](https://github.com/etclabscore/core-geth/pull/694)) — the first upstream code response in 21 months, forced by the live attack rather than prior disclosures |
 | 18 March 2026 | @niooss-ledger [documents remaining unpatched CVEs](https://github.com/etclabscore/core-geth/pull/694#issuecomment-4089185353) after v1.12.21: CVE-2025-24883, CVE-2026-26313, and CVE-2026-26315 still unaddressed |
 | 20–21 March 2026 | White B0x publicly submits all security patches as individual PRs to `ethereumclassic/core-geth` ([#10](https://github.com/ethereumclassic/core-geth/pull/10)–[#36](https://github.com/ethereumclassic/core-geth/pull/36)), references them in [issue #692](https://github.com/etclabscore/core-geth/issues/692) to make them available for the upstream maintainer to pull from |
-| 28 March 2026 | [@diega releases v1.12.22](https://github.com/etclabscore/core-geth/releases/tag/v1.12.22) ("Hermes") backporting the remaining CVE fixes — drawn from the publicly posted White B0x patches with no attribution; Go 1.21 EOL toolchain unchanged, no ETC-specific modernisation |
-| May 2026 | ETC team privately alerts upstream developer again with the `ethereumclassic/core-geth` v1.13.0 codebase — no response |
+| 28 March 2026 | [@diega releases v1.12.22](https://github.com/etclabscore/core-geth/releases/tag/v1.12.22) ("Hermes") — CVE fixes drawn from publicly posted White B0x patches with no attribution; Go 1.21 EOL toolchain unchanged, no ETC-specific modernisation. Two of the fixes are forensic evidence of the source: CVE-2026-26313 uses a novel minimal port approach (pre-decode `countValuesExceedsLimit` scan) because the full upstream RawList refactor was incompatible with core-geth's structure — this is not derivable by cherry-picking from go-ethereum. CVE-2026-26314 was likewise manually ported with no clean upstream commit to copy from. Both novel implementations appeared in White B0x's public PRs on 20–21 March; they appear in v1.12.22 on 28 March. |
+| May 2026 | Ethereum Classic Core Developers privately alert upstream developer again with the `ethereumclassic/core-geth` pre-release codebase — no response |
 
-**Note on upstream v1.12.21/v1.12.22:** The upstream emergency patches address the CVE backports and are a safer option for operators who have not yet migrated. However, they remain on the Go 1.21 EOL toolchain and do not include the ETC network tooling, DNS discovery updates, or Olympia-readiness work included in v1.13.0. Operators running v1.12.x should upgrade to [ethereumclassic/core-geth v1.13.0](https://github.com/ethereumclassic/core-geth) and plan migration to [Fukuii](https://fukuii.com) ahead of the Olympia upgrade.
+**Note on upstream v1.12.21/v1.12.22:** The upstream emergency patches address the CVE backports and are a safer option than v1.12.20 for operators who have not yet migrated. However, they remain on the Go 1.21 EOL toolchain and do not include the ETC network tooling, DNS discovery updates, or Olympia-readiness work included in v1.13.0. Operators running v1.12.x should upgrade to v1.12.22 at minimum and track [ethereumclassic/core-geth](https://github.com/ethereumclassic/core-geth) for the v1.13.0 release. Plan migration to [Fukuii](https://fukuii.com) ahead of the Olympia upgrade.
 
 ### Prior Maintainers
 
@@ -67,11 +67,13 @@ The core-geth fork was then developed by ETC Labs until they left the ETC ecosys
 | CVE-2026-22862 | High | crypto/ecies — ECIES decrypt length check | Backported in v1.12.21 | Patched |
 | CVE-2026-26315 | High | crypto/ecies + secp256k1 — ECIES GenerateShared / IsOnCurve | Backported in v1.12.22 | Patched |
 | CVE-2026-26314 | High | crypto/secp256k1 — coordinate field boundary bypass | Backported in v1.12.21 | Patched |
-| CVE-2026-22868 | Medium | txpool / P2P — KZG DoS (blob/KZG proof verification) | Declared N/A to ETC by upstream¹ | Code path removed |
-| CVE-2026-26313 | High | P2P — RLP item count memory exhaustion | Mitigated in v1.12.22 | Patched |
+| CVE-2026-22868 | Medium | txpool / P2P — KZG DoS (blob/KZG proof verification) | Declared N/A to ETC by upstream¹ | Patched (peer disconnect on invalid proof) |
+| CVE-2026-26313 | High | P2P — RLP item count memory exhaustion | Mitigated in v1.12.22²  | Patched |
 | — (GraphQL depth) | Medium | RPC — unbounded query nesting DoS | Not addressed | Patched |
 
-¹ Upstream maintainer [@diega confirmed](https://github.com/etclabscore/core-geth/issues/692) that CVE-2026-22868 is "not applicable to ETC" because ETC does not support EIP-4844 blob/KZG transactions. The v1.13.0 remediation removes the KZG code path entirely rather than patching it.
+¹ Upstream maintainer [@diega confirmed](https://github.com/etclabscore/core-geth/issues/692) that CVE-2026-22868 is "not applicable to ETC" because ETC does not support EIP-4844 blob/KZG transactions. The v1.13.0 patch nonetheless implements the go-ethereum fix: peer disconnect on invalid KZG proof via `ErrKZGVerificationError` sentinel.
+
+² The v1.12.22 mitigation prevents the OOM crash (no per-item allocation) but uses `rlp.CountValues`, which scans the full RLP payload before returning the item count. A malicious peer can still force O(n) tag-byte scanning work proportional to message size on each rejected oversized message — approximately 2,500× more work per 10 MiB attack message than v1.13.0's early-exit `countValuesExceedsLimit`. The CPU amplification DoS is unmitigated in v1.12.22. See the Residual Vulnerability note in the CVE-2026-26313 detail section below.
 
 ---
 
@@ -229,20 +231,20 @@ if (!secp256k1_fe_set_b32(&feX, point) ||
 **Severity:** Medium
 **Component:** `core/txpool/validation.go` — `validateBlobSidecar()`; `eth/fetcher/tx_fetcher.go` — `Enqueue()`
 **Affected:** etclabscore/core-geth ≤ v1.12.20 (code present but inactive on ETC)
-**Remediated:** ethereumclassic/core-geth v1.13.0 — code path removed
+**Patched:** ethereumclassic/core-geth v1.13.0
 **Commit:** `1419c5310`
 **Upstream reference:** go-ethereum commit `fdfd1235a` (v1.16.8)
 
-**ETC Applicability:** The upstream maintainer [declared this not applicable to ETC](https://github.com/etclabscore/core-geth/issues/692) — ETC does not support EIP-4844 blob transactions, so the KZG code path is never reached on the ETC network. The v1.12.22 release at `etclabscore/core-geth` does not address it. The v1.13.0 remediation removes the dead code path entirely, eliminating any surface area regardless of how future ETC forks evolve.
+**ETC Applicability:** The upstream maintainer [declared this not applicable to ETC](https://github.com/etclabscore/core-geth/issues/692) — ETC does not support EIP-4844 blob transactions, so the KZG code path is not reached in normal operation on the ETC network. The v1.12.22 release at `etclabscore/core-geth` does not address it. The v1.13.0 patch follows the go-ethereum approach: introduces `ErrKZGVerificationError` as a sentinel error and disconnects any peer that delivers a transaction with an invalid KZG proof, preventing repeated DoS attempts from the same peer.
 
 **Description:**
 KZG blob proof verification is computationally expensive. A malicious peer could repeatedly broadcast blob transactions with invalid KZG proofs, causing the node to perform the full expensive cryptographic verification on each delivery attempt before rejecting the transaction. Because the error was not distinguished from other validation failures, the peer was not disconnected and could continue flooding the node indefinitely.
 
 **Impact:**
-On ETC: no active exposure (blob transactions rejected at an earlier validation stage). Included for completeness and to remove dead code from the ETC client surface.
+On ETC: no active exposure in normal operation (blob transactions are rejected at an earlier validation stage). The code path is nonetheless present in the inherited go-ethereum codebase and could be reached by a crafted peer interaction.
 
 **Remediation:**
-The KZG validation code path (`validateBlobSidecar`, `ErrKZGVerificationError` sentinel) was removed from the ETC client in v1.13.0. On Ethereum mainnet, the upstream fix introduces a sentinel error that signals peer disconnection on KZG proof failure — that approach applies to Ethereum, not ETC.
+Ported from go-ethereum commit `fdfd1235a` (v1.16.8). Adds `ErrKZGVerificationError` as a sentinel error in `core/txpool/errors.go` and wraps KZG validation failures in `validateBlobSidecar()` with it. In `eth/fetcher/tx_fetcher.go`, any delivery flagged with this violation immediately triggers `f.dropPeer(delivery.origin)` — preventing the offending peer from repeatedly triggering expensive cryptographic verification.
 
 ```go
 case errors.Is(err, txpool.ErrKZGVerificationError):
@@ -280,6 +282,35 @@ Pre-decode item count validation using `countValuesExceedsLimit()` — a zero-al
 - Transaction broadcasts (TransactionsMsg, NewBlockHashesMsg): 32768 items
 
 Messages with unknown codes pass through to the normal decoder unchanged. The validator exits early as soon as the limit is exceeded, avoiding full iteration over attack payloads containing millions of tiny items.
+
+**Note — minimal port:** This is a targeted backport of the item-count check only. The full upstream remediation (go-ethereum PR #33835) refactors message decoding to use `rlp.RawList` for delayed, lazy decoding across the entire handler layer. That refactor could not be cleanly applied here due to 13 merge conflicts arising from structural divergence between core-geth and go-ethereum. The top-level item count bound is sufficient to prevent the OOM; inner list items (e.g., transactions within a `BlockBody`) remain bounded by the existing 10 MiB `maxMessageSize` cap. A future full backport remains desirable but is deferred to avoid scope creep in the security patch.
+
+**Forensic Analysis: Origin of the v1.12.22 Mitigation**
+
+The v1.12.22 mitigation (`7940b2816`, "eth/protocols: pre-decode item count validation") uses an algorithm that does not exist in upstream go-ethereum and is not derivable from it. The upstream fix (PR #33835) uses `rlp.RawList` for lazy delayed decoding — incompatible with core-geth's structure due to 13 merge conflicts. The algorithm in v1.12.22 is a novel approach invented to work around that incompatibility. It first appeared in White B0x's `5d0cb8b34` (21 March 2026); it appears in Diego's commit seven days later.
+
+Both implementations follow an identical five-step flow:
+
+1. Read the message payload into a buffer via `io.ReadFull`
+2. Restore `msg.Payload` to `bytes.NewReader(buf)` so the downstream decoder still works
+3. Call `rlp.SplitList(buf)` to extract the list content
+4. Optionally call `rlp.Split` to skip a RequestId wrapper (eth/66+), then `rlp.SplitList` again on the remainder
+5. Count items in the resulting content slice
+
+This buffer-restore-SplitList-Split-count pattern is specific to core-geth's architecture and is absent from all upstream go-ethereum commits. The v1.12.22 version differs from White B0x's in cosmetic respects only: it inlines all validation into `handler.go` rather than factoring it into a separate `msgvalidate.go`, uses the standard library `rlp.CountValues` rather than an early-exit `countValuesExceedsLimit` helper, defines per-type limits inline rather than as named constants, and includes fewer test cases. The algorithm structure is otherwise identical.
+
+CVE-2026-26314 provides corroborating evidence: the `crypto/secp256k1/curve.go` and `crypto/secp256k1/ext.h` changes in v1.12.22 are byte-for-byte identical to White B0x's `2d3528803`. The `crypto/signature_nocgo.go` adaptation — an ETC-specific btcec wrapper override that does not exist in upstream go-ethereum — appears in both with a single cosmetic difference (White B0x uses an intermediate variable `p := curve.Params().P`; Diego inlines the call). The presence of this novel ETC-specific adaptation in both repositories, with the White B0x version dated 26 February and the Diego version dated 28 March, is consistent with the CVE-2026-26313 pattern.
+
+**Residual Vulnerability in v1.12.22: Unbounded Tag-Scan DoS²**
+
+The v1.12.22 mitigation uses `rlp.CountValues(content)`, which iterates through **all** items in the RLP payload before returning the total count. White B0x's implementation uses `countValuesExceedsLimit(content, limit)`, which exits as soon as the count exceeds the configured limit.
+
+This distinction leaves an amplification vector open in v1.12.22: a malicious peer can send a single 10 MiB message packed with millions of minimal-length RLP items. v1.12.22 scans every tag byte in the payload before determining the count exceeds the limit and rejecting the message. v1.13.0 exits after scanning `limit + 1` items.
+
+At the 10 MiB message cap with 2-byte items, an attacker can force approximately 2,500× more tag-byte scanning work per message on a v1.12.22 node than on a v1.13.0 node (≈5M iterations vs ≈2,049). Across multiple simultaneous malicious connections, this produces meaningful CPU exhaustion. The OOM crash from uncontrolled allocation is prevented; the CPU amplification DoS from unbounded tag scanning is not.
+
+**Status in v1.12.22:** Partially mitigated — OOM crash prevented, CPU amplification DoS remains open.  
+**Status in v1.13.0:** Fully patched.
 
 ---
 
@@ -337,11 +368,11 @@ s, err := graphql.ParseSchema(schema, &q, graphql.MaxDepth(maxQueryDepth))
 | 18 March 2026 | Active ECIES crash-loop attack on ETC bootnodes; `etclabscore` releases [v1.12.21 ("Aegis")](https://github.com/etclabscore/core-geth/releases/tag/v1.12.21) — emergency P2P patch ([PR #694](https://github.com/etclabscore/core-geth/pull/694)) |
 | 18 March 2026 | @niooss-ledger [documents remaining unpatched CVEs](https://github.com/etclabscore/core-geth/pull/694#issuecomment-4089185353) after v1.12.21 |
 | 20–21 March 2026 | White B0x publicly submits all CVE patches and Go 1.26 upgrade as PRs to `ethereumclassic/core-geth`; references in issue #692 to make them available for the upstream maintainer |
-| 20 March 2026 | GraphQL depth limit and CVE-2026-22868 code path removed (`6c2d383fa`, `1419c5310`) |
+| 20 March 2026 | GraphQL depth limit patched (`6c2d383fa`); CVE-2026-22868 patched — peer disconnect on invalid KZG proof (`1419c5310`) |
 | 21 March 2026 | CVE-2026-26313 patched (`5d0cb8b34`) |
 | 28 March 2026 | `etclabscore` releases [v1.12.22 ("Hermes")](https://github.com/etclabscore/core-geth/releases/tag/v1.12.22) — CVE fixes drawn from publicly posted White B0x patches; no attribution; Go 1.21 EOL unchanged |
-| March 2026 | Core-Geth v1.13.0 released at `ethereumclassic/core-geth` — all CVEs patched, Go 1.26, Olympia-ready |
-| May 2026 | ETC team privately alerts upstream developer with `ethereumclassic/core-geth` v1.13.0 codebase — no further activity at `etclabscore/core-geth` |
+| TBD (Olympia) | Core-Geth v1.13.0 to be released at `ethereumclassic/core-geth` — all CVEs patched, Go 1.26, Olympia-ready; final release series before network transitions to Fukuii |
+| May 2026 | Ethereum Classic Core Developers privately alert upstream developer with `ethereumclassic/core-geth` v1.13.0 codebase — no further activity at `etclabscore/core-geth` |
 
 ---
 
@@ -353,6 +384,7 @@ s, err := graphql.ParseSchema(schema, &q, graphql.MaxDepth(maxQueryDepth))
 | Cryptographic oracle (CVE-2026-26315) | High | Repeated handshake attempts could leak P2P node key bits | Patched; key rotation recommended for long-running nodes |
 | Remote crash via ECIES (CVE-2026-22862) | High | Any peer can crash a node during RLPx handshake with a malformed ECIES payload | Patched in v1.13.0 |
 | Remote OOM via RLP (CVE-2026-26313) | High | Any peer can OOM-crash a node with a single crafted P2P message | Patched in v1.13.0 |
+| CPU amplification DoS — CVE-2026-26313 residual (v1.12.22 only) | Medium | v1.12.22 mitigation scans full RLP payload before rejecting oversized messages; ~2,500× more work per attack message than v1.13.0; malicious peers can exhaust CPU without causing OOM | Unmitigated in v1.12.22; patched in v1.13.0 |
 | Go Runtime EOL | High | 19 months on unsupported Go toolchain; runtime CVEs accumulated unpatched | Upgraded to Go 1.26 in v1.13.0 |
 | Single-maintainer upstream | High | Private disclosures ignored for over a year; public CVE disclosure and an active network attack were required to force partial patches (v1.12.21/v1.12.22); Go toolchain and ETC modernisation not addressed | Client transferred to `ethereumclassic` org; multi-client Olympia architecture (Fukuii, Core-Geth, Besu) reduces single-client dependency |
 | Release gap (21 months) | Medium | Longest maintenance gap in ETC network history; window for chain divergence or targeted attack | Protocol-funded maintenance path via ECIP-1112 treasury |
@@ -367,19 +399,19 @@ The audit was initiated during cross-client interoperability testing for the Oly
 
 ## Network Migration Path
 
-Core-Geth v1.13.x is the final stable release series of this client. The ETC network is migrating to [Fukuii](https://fukuii.com) ([github.com/chippr-robotics/fukuii](https://github.com/chippr-robotics/fukuii)) as the primary ETC-native execution client, developed natively for the Ethereum Classic ecosystem. Core-Geth will continue to be maintained for the Olympia upgrade cycle to ensure a stable transition, but operators should plan their migration to Fukuii beyond that point.
+Core-Geth v1.13.x will be the final stable release series of this client. The ETC network is migrating to [Fukuii](https://fukuii.com) ([github.com/chippr-robotics/fukuii](https://github.com/chippr-robotics/fukuii)) as the primary ETC-native execution client, developed natively for the Ethereum Classic ecosystem — the only client built specifically for ETC from the ground up. Core-Geth will be maintained through the Olympia upgrade cycle to ensure a stable transition, but operators should plan their migration to Fukuii beyond that point.
 
-**If you are running any v1.12.x release, upgrade to v1.13.0 immediately.** The v1.12 series is affected by all six vulnerabilities documented in this audit and is not supported for the Olympia network upgrade.
+**If you are running v1.12.20 or earlier, upgrade to v1.12.22 immediately** to address the most critical CVEs. v1.13.0 — which includes the full Go 1.26 upgrade, ETC-specific modernisation, and Olympia readiness — will be released under the `ethereumclassic` organisation ahead of Olympia activation. No v1.12.x release will be compatible with the Olympia network upgrade.
 
 ---
 
 ## Recommendations
 
-- **Node operators (v1.12.x):** Update to Core-Geth v1.13.0 from [github.com/ethereumclassic/core-geth](https://github.com/ethereumclassic/core-geth) immediately. Nodes running v1.12.20 or earlier are exposed to remote crash and potential key-oracle attacks from any peer, and will not be compatible with the Olympia hard fork.
-- **Infrastructure providers and exchanges:** Treat the upgrade to v1.13.0 as a security-critical patch, not a routine version bump. Prioritise before Olympia activation. Begin planning migration to Fukuii for post-Olympia operation.
+- **Node operators (v1.12.20 or earlier):** Upgrade to v1.12.22 immediately to patch the most critical CVEs. Then track [github.com/ethereumclassic/core-geth](https://github.com/ethereumclassic/core-geth) for v1.13.0 ahead of Olympia activation. Nodes on v1.12.20 or earlier are exposed to remote crash and potential key-oracle attacks from any peer, and will not be compatible with the Olympia hard fork.
+- **Infrastructure providers and exchanges:** Treat the upgrade to v1.13.0 as a security-critical update, not a routine version bump. Prioritise deployment ahead of Olympia activation. Begin planning migration to Fukuii for post-Olympia operation.
 - **Long-running nodes:** Consider rotating the P2P node key (`--nodekey`) as a precaution against CVE-2026-26315 oracle exposure. Any node reachable from the public internet over the 21-month gap was potentially targeted.
-- **Multi-client operation:** Run at minimum two independent clients (e.g., Core-Geth v1.13.0 + Fukuii, or Core-Geth + Besu) for redundancy. The Olympia upgrade architecture is designed around multi-client operation precisely to mitigate the risk of a single-client maintenance failure.
-- **GraphQL endpoint:** If `--graphql` is enabled on public-facing nodes, verify the upgrade to v1.13.0 is in place before re-opening the port.
+- **Multi-client operation:** Run at minimum two independent clients (e.g., Core-Geth + Fukuii, or Core-Geth + Besu) for redundancy. The Olympia upgrade architecture is designed around multi-client operation precisely to mitigate the risk of a single-client maintenance failure.
+- **GraphQL endpoint:** If `--graphql` is enabled on public-facing nodes, disable it until v1.13.0 is released or verify v1.12.22 is in place before re-opening the port.
 
 ---
 
