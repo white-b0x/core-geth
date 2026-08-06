@@ -387,7 +387,7 @@ s, err := graphql.ParseSchema(schema, &q, graphql.MaxDepth(maxQueryDepth))
 | Go Runtime EOL | High | 19 months on unsupported Go toolchain; runtime CVEs accumulated unpatched | Upgraded to Go 1.26 in v1.13.0 |
 | Single-maintainer upstream | High | Private disclosures ignored for over a year; public CVE disclosure and an active network attack were required to force partial patches (v1.12.21/v1.12.22); Go toolchain and ETC modernization not addressed | Client transferred to `ethereumclassic` org; multi-client Olympia architecture (Fukuii, Core-Geth, Besu) reduces single-client dependency |
 | Unreviewed emergency patches (supply chain risk) | High | v1.12.21 and v1.12.22 were each authored, reviewed, and merged by the same individual with no independent peer review — v1.12.21 in 60 seconds, v1.12.22 in under 2 minutes. A compromised or malicious maintainer could ship a backdoored patch under cover of an emergency response, with no second reviewer to catch it. This risk is structural, not hypothetical: it applies to any future emergency patches at `etclabscore/core-geth` under the current governance model. | v1.13.0 is developed under the `ethereumclassic` org with multi-contributor review; Fukuii migration eliminates the dependency entirely |
-| Release gap (21 months) | Medium | Longest maintenance gap in ETC network history; window for chain divergence or targeted attack | Protocol-funded maintenance path via ECIP-1112 treasury |
+| Release gap (21 months) | Medium | Longest maintenance gap in ETC network history; window for chain divergence or targeted attack | Basefee-funded maintenance path via the ECIP-1112 Olympia Treasury |
 
 ---
 
@@ -617,7 +617,7 @@ When the attack forced action, v1.12.21 was cut the same day as the PR was opene
 
 ---
 
-### Why the Client Moved to the `ethereumclassic` Organisation
+### Why the Client Moved to the `ethereumclassic` Organization
 
 The `etclabscore` organization is controlled by ETC Cooperative. When the Cooperative announced in December 2024 that core-geth was entering maintenance mode, there was no transition plan for who would own security maintenance for the primary ETC execution client going forward. The five structural failures above were all visible at that point.
 
@@ -636,7 +636,9 @@ The longer-term migration path is to [Fukuii](https://fukuii.com) ([github.com/c
 
 The March 2026 attack was not a surprise. It was the inevitable outcome of a governance model that had been accumulating risk for five years. ETC Cooperative employed developers on closed-source employment contracts — private compensation, no public deliverable commitments, no community oversight of how funds were spent or what work was being done. Over that period, millions of dollars in protocol-level development funds were disbursed with no mechanism for the ETC community to audit progress, escalate unresponsiveness, or redirect funding when a maintainer became inactive. Diego López León's 14-month absence from active security maintenance — while drawing a compensation package exceeding $200,000 per year as the sole person with merge authority over the primary ETC client — is the most visible outcome of that model, but it is not an isolated failure. It is what the model was always capable of producing.
 
-The Olympia network upgrade (ECIP-1111/1112) directly targets this attack vector at the protocol level. ECIP-1112 establishes an on-chain treasury funded by a portion of block rewards, with an open, transparent bidding system for protocol-level work. Funding decisions are made through decentralised governance rather than closed employment contracts. Deliverables are defined publicly before funds are disbursed. Any participant can bid; any token holder can observe and contest allocations. The ETC Cooperative model — where a private organization controlled who got paid, for what, and with what accountability — is replaced by a system that makes the community itself the client.
+The Olympia network upgrade directly targets this attack vector at the protocol level. ECIP-1111 activates EIP-1559 on Ethereum Classic, but unlike Ethereum Mainnet — which burns the resulting `basefee` — ETC redirects it at the consensus layer to the Olympia Treasury, the immutable contract specified by ECIP-1112. **Miner block rewards and priority-fee tips are unaffected.** The funding is therefore non-inflationary and costs miners nothing: it accrues automatically from network usage rather than from a foundation, a donor, or a closed employment contract. The Treasury also accepts voluntary on-chain donations and block rewards from miners who choose to point their coinbase at it, but those are supplementary — the protocol-level source is basefee revenue.
+
+The Treasury contract itself holds no governance logic. ECIP-1112 defines custody only: an immutable, non-upgradeable vault with a single restricted withdrawal entry point. Allocation runs through Olympia DAO (ECIP-1113) and the Olympia Funding Proposal process (ECIP-1114) — permissionless submission by any participant, recipient and amount and deliverables fixed in the proposal before any vote, approval by on-chain governance vote, and timelocked execution that is publicly verifiable on-chain. The ETC Cooperative model — where a private organization controlled who got paid, for what, and with what accountability — is replaced by a system that makes the community itself the client.
 
 The security failures documented in this audit are, in that sense, the final argument for Olympia's treasury model: a live network attack that was months in the making, fully preventable, and traceable to a single point of unaccountable human authority with no community recourse.
 
@@ -653,10 +655,12 @@ The security failures documented in this audit are, in that sense, the final arg
 - v1.12.21 ("Aegis") release: https://github.com/etclabscore/core-geth/releases/tag/v1.12.21
 - v1.12.22 ("Hermes") release: https://github.com/etclabscore/core-geth/releases/tag/v1.12.22
 - Go vulnerability database: https://vuln.go.dev
-- ECIP-1111 (Olympia base): https://ecips.ethereumclassic.org/ECIPs/ecip-1111
-- ECIP-1112 (treasury funding): https://ecips.ethereumclassic.org/ECIPs/ecip-1112
-- ECIP-1121 (Olympia — EVM updates): https://ecips.ethereumclassic.org/ECIPs/ecip-1121
-- ECIP-1122 (Olympia — network upgrades): https://ecips.ethereumclassic.org/ECIPs/ecip-1122
+- ECIP-1111 (Olympia — EIP-1559 activation and basefee redirect): https://ecips.ethereumclassic.org/ECIPs/ecip-1111
+- ECIP-1112 (Olympia Treasury contract): https://ecips.ethereumclassic.org/ECIPs/ecip-1112
+- ECIP-1113 (Olympia DAO governance framework): https://ecips.ethereumclassic.org/ECIPs/ecip-1113
+- ECIP-1114 (Olympia Funding Proposal process): https://ecips.ethereumclassic.org/ECIPs/ecip-1114
+- ECIP-1121 (Olympia — execution-layer EIP parity): https://ecips.ethereumclassic.org/ECIPs/ecip-1121
+- ECIP-1122 (Olympia — ETC network security client configuration): https://ecips.ethereumclassic.org/ECIPs/ecip-1122
 - go-ethereum security advisories: https://github.com/ethereum/go-ethereum/security/advisories
 - CVE-2025-24883 (GHSA-q26p-9cq4-7fc2): https://github.com/ethereum/go-ethereum/security/advisories/GHSA-q26p-9cq4-7fc2
 - CVE-2026-22862 (GHSA-mr7q-c9w9-wh4h): https://github.com/ethereum/go-ethereum/security/advisories/GHSA-mr7q-c9w9-wh4h
