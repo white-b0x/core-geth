@@ -1,0 +1,58 @@
+# Dependabot version updates with a cooldown.
+#
+# The cooldown delays convenience updates so a freshly-published malicious
+# version is withdrawn before it can be pulled in. Security advisories bypass
+# cooldown automatically, so CVE fixes are NOT delayed by this file.
+#
+# `semver-major-days` is set only on the ecosystems GitHub documents as
+# supporting SemVer-bump cooldowns. gomod and pip do; github-actions and docker
+# do not, so those carry `default-days` alone rather than a key with nothing to
+# act on.
+#
+# NOTE: version updates (this file) and security updates (a repository setting)
+# are independent, and as measured on 2026-08-10 Dependabot alerts and security
+# updates are CURRENTLY DISABLED on this repository. So the cooldown below is
+# not delaying a CVE fix that would otherwise arrive — nothing is arriving.
+# This file governs version updates only and cannot turn the security path on;
+# that is a repository setting.
+version: 2
+updates:
+  # Go modules — go.mod / go.sum at the repository root.
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+      semver-major-days: 21
+
+  # GitHub Actions — workflows under .github/workflows/ pin actions by tag.
+  # Dependabot searches .github/workflows/ from a directory value of "/".
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+
+  # Docker base images — Dockerfile and Dockerfile.alltools at the root.
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+
+  # Python — BOTH manifests in the repo, which is why this uses `directories`
+  # rather than `directory`:
+  #   /              requirements-mkdocs.txt, installed by docs-deploy.yml
+  #   /cmd/clef      requirements.txt (tinyrpc), the clef external-signer tests
+  - package-ecosystem: "pip"
+    directories:
+      - "/"
+      - "/cmd/clef"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+      semver-major-days: 21

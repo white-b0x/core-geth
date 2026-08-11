@@ -1,0 +1,297 @@
+# AGENTS.md — CoreGeth (Ethereum Classic execution client)
+
+Context for AI coding agents working in this repository. Human-facing overview is
+in `README.md`; this file carries the build, test and boundary detail an agent
+needs and a README should not.
+
+## What this project is
+
+CoreGeth is the Ethereum Classic (ETC) execution client, a fork of
+[go-ethereum](https://github.com/ethereum/go-ethereum). It supports every ETC
+hard fork from Frontier through Spiral and implements the **Olympia** upgrade
+(ECIP-1111, ECIP-1112, ECIP-1121).
+
+The client is in **maintenance mode and is scheduled for sunset after Olympia**;
+`v1.13.x` is the final stable release series. See the warning at the top of
+`README.md` before proposing any forward-looking work.
+
+**This repository is a fork.** Its `origin` is a fork of
+`ethereumclassic/core-geth`, which is where the Olympia release lands, and it
+also carries `ethereum/go-ethereum` as a second upstream remote. Changes may be
+sent upstream as pull requests, so keep diffs minimal and focused — see
+Boundaries.
+
+## Stack and versions
+
+Read from this repository's own manifests, not from any external "current
+version" list.
+
+| Thing | Value | Source |
+|---|---|---|
+| Language | Go 1.26 | `go` directive in `go.mod` |
+| Module path | `github.com/ethereum/go-ethereum` | `go.mod` (unchanged from upstream) |
+| CI Go version | 1.26 | `.github/workflows/test-linux.yml` |
+| Docker builder | `golang:1.26-alpine` | `Dockerfile` |
+| Docker runtime | `alpine:latest` | `Dockerfile` |
+| Build orchestration | `Makefile` → `build/ci.go` | `Makefile` |
+| Linter | golangci-lint via `build/ci.go lint` | `.golangci.yml`, `Makefile` |
+
+There is **no `toolchain` directive** in `go.mod` — only `go 1.26`.
+
+## Commands
+
+Every command below was read out of this repository's `Makefile`,
+`build/ci.go`, `README.md`, or `.github/workflows/`. Do not invent others.
+
+### Build
+
+```bash
+make geth                                      # → go run build/ci.go install ./cmd/geth
+make all                                       # build every executable under cmd/
+go run build/ci.go install -static ./cmd/geth  # static build (what the Dockerfile runs)
+```
+
+`make geth` writes the binary to `./build/bin/geth` (`GOBIN = ./build/bin`).
+
+### Test
+
+```bash
+make test                                      # depends on `all`; runs build/ci.go test -timeout 20m
+go run build/ci.go test -short                 # faster feedback while iterating
+make test-coregeth                             # the core-geth-specific suite CI runs
+
+# Narrower go test invocations documented in README.md:
+go test ./params/... -run TestETC -v
+go test ./core/... -run "TestGasLimit|TestForkCompliance|TestECIP1017|TestTreasury|TestOlympia" -v
+go test ./consensus/ethash/... -run "TestDifficultyETC|TestDifficultyECIP" -v
+```
+
+`build/ci.go test` accepts `-short`, `-race`, `-coverage`, `-v`, `-timeout`,
+`-arch`, `-cc`, `-dlgo`, `-cachedir`.
+
+**Live-network tests are build-tagged and require a running node.** They do not
+run by default:
+
+```bash
+go test -tags live ./tests/live_etc/ -v        # //go:build live
+```
+
+### Lint
+
+```bash
+make lint                                      # → go run build/ci.go lint
+```
+
+`.golangci.yml` sets `disable-all: true` and enables **thirteen** linters:
+`goimports`, `gosimple`, `govet`, `ineffassign`, `misspell`, `unconvert`,
+`typecheck`, `unused`, `staticcheck`, `bidichk`, `durationcheck`,
+`exportloopref`, `whitespace`. Read that file rather than this list — several
+more are present but commented out, and its `issues.exclude-rules` block
+carries `SA1019` deprecation suppressions that only make sense because
+`staticcheck` is on.
+
+### Generated code
+
+31 `gen_*.go` files are generated, and 25 files carry `go:generate` directives.
+CI enforces that they are current in `.github/workflows/go-generate-check.yml`,
+which runs `make devtools` then `go generate` over `go list ./...` (excluding
+`trezor`) and fails if the tree changes. Regenerate with `go generate ./...`
+after installing `make devtools`; `solc` and `protoc` are required.
+
+### Docs
+
+```bash
+pip install -r requirements-mkdocs.txt
+make mkdocs-serve                              # → build/mkdocs-serve.sh
+make docs-generate                             # regenerate JSON-RPC docs from OpenRPC
+```
+
+### Run a node
+
+`run-mordor.sh` at the repository root starts a Mordor testnet node. It expects
+`geth` on `PATH` and takes extra flags through `"$@"`. Read it before running
+it — it hard-codes a data directory and binds RPC to `0.0.0.0`.
+
+## Commands that do NOT exist here — do not call them
+
+Absence is load-bearing. Each of these was checked in this tree:
+
+- **`make evm`, `make evmc`, `make android`, `make ios`, `make geth-cross`** are
+  listed in the `Makefile`'s `.PHONY` line but have **no rule**. `make -n evm`
+  prints `Nothing to be done for 'evm'`. They are dead names inherited from
+  upstream, not build targets.
+- **`go run build/ci.go check_generate` does not exist in this fork.** The
+  subcommands `build/ci.go` actually defines are `install`, `test`, `lint`,
+  `archive`, `docker`, `debsrc`, `nsis`, `purge`, `sanitycheck`. Newer
+  go-ethereum has `check_generate`; this fork does not. Use the CI workflow's
+  `go generate` route instead.
+- **`run-classic.sh` is not at the repository root.** Only `run-mordor.sh` is.
+- **There is no `LICENSE` file** — see Licensing below.
+- **There is no `.editorconfig` and no pre-commit hook configuration.** Match
+  surrounding style by hand and rely on `goimports` via `make lint`; there is no
+  local formatting gate that runs on its own.
+- **`evmc/` and `core/genesis_alloc.go` do not exist**, although `.golangci.yml`
+  still lists both under `skip-files:`. Stale upstream references.
+- **`tests/evm-benchmarks` is an uninitialized submodule** in a fresh checkout.
+  `tests/testdata` and `tests/testdata-etc` are populated. Run
+  `git submodule update --init --recursive` before any suite that needs them.
+
+## Repository structure
+
+```
+cmd/geth/          CLI entry point
+core/              block processing, state, genesis
+  vm/              EVM — interpreter, opcodes, precompiles
+consensus/ethash/  ETChash proof-of-work (ETC difficulty rules)
+params/            chain configs and protocol versions
+eth/               wire protocol, sync
+p2p/               networking and discovery
+rpc/ graphql/      RPC transports
+accounts/ signer/  account management and signing
+crypto/            cryptographic primitives
+trie/ triedb/      state trie
+build/             ci.go build orchestration and helper scripts
+internal/build/    build toolchain (gotool.go)
+tests/             consensus test harness + submodule fixtures
+  live_etc/        live-network tests, `live` build tag
+docs/              mkdocs site, including docs/audits/
+```
+
+### Key files for ETC work
+
+| File | Purpose |
+|---|---|
+| `params/config_classic.go` | ETC mainnet fork blocks, chain ID 61, ECBP1100 MESS |
+| `params/config_mordor.go` | Mordor testnet fork blocks, chain ID 63 |
+| `consensus/ethash/ethash.go` | ETChash PoW consensus |
+| `core/vm/contracts.go` | precompile registry |
+| `core/vm/opcodes.go` | EVM opcode definitions |
+| `internal/build/gotool.go` | build flags — hard-codes `CGO_CFLAGS=-O2 -g -D__BLST_PORTABLE__ -std=gnu11`, which **overrides any `CGO_CFLAGS` set in the Docker environment**. `-std=gnu11` is what stops C23-aware compilers rejecting blst's legacy typedefs |
+
+## Branching
+
+**Commit directly to `main`.** Maintainer decision, 2026-08-11, recorded here so
+it is settled once rather than re-decided per commit. This is a solo-maintained
+repository: nothing else pulls `main`, and no CI, deploy or release triggers from
+it. Do not open a topic branch for routine work on the assumption that a fork of
+a consensus-critical client must always branch — that is ceremony here, not
+protection.
+
+The repository does carry topic branches using conventional prefixes
+(`security/`, `test/`, `docs/`, `chore/`, `fix/`, `rlp/`) with kebab-case
+descriptions. Use one when you actually want review before something lands, or
+when `main` must stay releasable through a long-running change. `main` is the
+default branch that release tags and upstream pull requests are cut from.
+
+**Pushing is unaffected and remains a separate decision from committing.** It
+must be confirmed explicitly, because this repository is public and pull requests
+from it go to a consensus-critical upstream. The policy above governs where
+commits land, not whether they leave the machine.
+
+### Known merge collision: `AGENTS.md` itself
+
+**`ethereum/go-ethereum` ships its own root `AGENTS.md`** — commit `406a852ec`,
+2026-02-25, *"AGENTS.md: add AGENTS.md (#33890)"*. That commit is **already in
+this clone**, reachable through the `geth` remote (`geth/master`) though not
+from `main` or `origin/main`. So a future merge from `geth/master` will collide
+on this file.
+
+**Resolution, decided in advance: this fork's `AGENTS.md` wins.** Upstream's
+file describes go-ethereum — it tells you to run `go run ./build/ci.go
+check_generate`, a subcommand this fork does not have — so taking it would
+hand an agent commands that fail here. Do not silently drop either side per the
+usual merge rule; this is the documented exception, and the reason is that the
+two files describe different programs.
+
+Worth porting from upstream's version if it changes: its `gofmt`/`goimports`
+pre-commit checklist. Do not port its command list wholesale.
+
+`ethereumclassic/core-geth`, the repository pull requests are actually sent to,
+has **no** `AGENTS.md`, so nothing collides in that direction.
+
+## Code style
+
+- Standard Go formatting: `gofmt` and `goimports`. `goimports` is enforced by
+  `make lint`.
+- Match the surrounding file. Much of this tree is upstream go-ethereum code
+  under its own conventions; ETC-specific additions live alongside it.
+- Every source file carries a GPL/LGPL header. Preserve it, and follow the
+  existing header form when adding a file.
+
+## Security
+
+`SECURITY.md` at the root carries the disclosure policy and PGP key.
+
+`docs/audits/2026-03-security-audit.md` documents the March 2026 remediation of
+six CVEs plus a GraphQL depth DoS. Read it before touching `crypto/`, `p2p/`,
+`rlp/` or `graphql/` — those are where the patched issues lived.
+
+Never commit node keys, keystores, mnemonics or JWT secrets. `.gitignore`
+covers `keystore/`, `*.keystore`, `nodekey`, `jwt.hex`, `jwtsecret`,
+`wallet.json`, `mnemonic.txt`, `*.key`, `*.pem` and the `.env` family; verify
+with `git check-ignore --no-index -q -- <path>` rather than by reading it.
+
+## Licensing — do not change
+
+There is **no file named `LICENSE`**, and that is correct, not an omission. The
+project uses go-ethereum's split licensing:
+
+- `COPYING` — GNU **GPL-3.0**, applying to the binaries under `cmd/`
+- `COPYING.LESSER` — GNU **LGPL-3.0**, applying to the library (everything
+  outside `cmd/`)
+
+Per-file headers state which applies. Do not add a `LICENSE` file, do not
+consolidate the two, and do not "fix" a community-standards checker that flags
+the absence — the split is deliberate and inherited from upstream.
+
+## Boundaries
+
+### Never without asking
+
+- **Consensus-critical behavior.** `consensus/`, `core/` block processing,
+  `core/vm/` opcode and gas semantics, and the fork-block tables in `params/`. A
+  wrong value here splits the chain.
+- **Chain configuration.** `params/config_classic.go` and
+  `params/config_mordor.go`. Fork blocks, chain IDs and MESS activation are
+  network-wide facts, not local settings.
+- **`internal/build/gotool.go` `CGO_CFLAGS`.** Changing it breaks the blst/c-kzg
+  build in ways that surface only at link time.
+- **Dependency changes** — `go.mod`, `go.sum`, and especially `blst`, `c-kzg`,
+  `gnark-crypto`, `btcec`, `graphql-go`. Route through the repository's
+  dependency-review process.
+- **Submodule pins** in `.gitmodules` / `tests/testdata*`. These are consensus
+  test vectors; moving them changes what "passing" means.
+- **Generated files** (`gen_*.go`). Regenerate them; do not hand-edit.
+- **CI and release configuration** — `.github/workflows/`, `Dockerfile`,
+  `Dockerfile.alltools`, `build/ci.go`.
+- **`README.md`'s maintenance-mode and migration warnings.** They are a
+  coordinated public statement, not editorial copy.
+
+### Never
+
+- Break wire-protocol compatibility with the ETC network. **EIP-7642 (eth/69) is
+  deliberately excluded** because it removes Total Difficulty from the handshake,
+  which ETC needs for proof-of-work chain selection. Do not "restore" it.
+- Commit private keys, node keys or mnemonics.
+- Remove or skip tests to make a build pass.
+- Refactor, rename or reformat code unrelated to the task. Diffs from this
+  repository may become upstream pull requests, and unrelated churn gets them
+  rejected.
+
+### Deliberately present, do not tidy
+
+- **`git.diff`** — a ~6 MB tracked diff artifact at the repository root.
+- **Legacy CI files** — `.travis.yml`, `circle.yml`, `appveyor.yml`,
+  `Jenkinsfile`, `oss-fuzz.sh`. Inherited from upstream; the live CI is
+  `.github/workflows/`.
+- **`swarm/` and `integration/`** — near-empty holdover directories.
+- **`AUTHORS` and `.mailmap`** — upstream attribution records.
+- **`accounts/keystore/`** — 32 tracked source files and test vectors, not key
+  material, despite the directory name. `.gitignore`'s `/keystore/` entry is
+  anchored specifically so it does not shadow them.
+
+### Environment
+
+Machine-specific facts — data directories, local run scripts, node identities —
+do not belong in this file, because it is public. Keep them in `CLAUDE.local.md`
+or under `.local/`, both of which `.gitignore` holds back.
