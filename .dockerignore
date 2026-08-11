@@ -1,5 +1,79 @@
+# Dockerfile line 16 is `ADD . /go-ethereum`, so everything not excluded here
+# lands in the BUILDER layer. The final image is unaffected — it is multi-stage
+# and only does `COPY --from=builder .../geth` — but the builder layer is still
+# reachable via `docker build --target builder`, `docker save`, and
+# `buildx --cache-to=type=registry`.
+#
+# This file is the second half of the same private/public gate as .gitignore.
+# Keep the two reconciled: anything secret enough to keep out of a commit is
+# secret enough to keep out of a build context.
+#
+# SYNTAX IS NOT GITIGNORE SYNTAX. Two differences that matter here, per
+# docker/docs `build/concepts/context.md`:
+#   1. "Leading and trailing slashes in ignore patterns are disregarded" — so
+#      `/foo/`, `/foo`, `foo/` and `foo` are one and the same pattern.
+#   2. A bare pattern is matched against the path from the context ROOT, so it
+#      does NOT match at any depth the way gitignore's does. Depth needs `**/`.
+# Consequence: `keystore` below excludes only a root-level keystore directory.
+# It must stay that way — `accounts/keystore/` is 32 tracked Go source files
+# the build needs, and a `**/keystore` pattern would break the build.
+
 **/*_test.go
 
 build/_workspace
 build/_bin
 tests/testdata
+
+# Local working directory — holds this machine's live P2P node keys
+# (.local/classic-nodekey, .local/mordor-nodekey) and internal working docs.
+.local
+local
+
+# Agent instruction files that are machine-local by design
+CLAUDE.local.md
+**/*.local.md
+.claude
+
+# Secrets & credentials. `**/` prefixes give depth coverage; verified safe
+# because the tracked tree contains no *.pem, *.key or .env file at any depth.
+.env
+.env.*
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/id_rsa
+**/id_ecdsa
+**/id_ed25519
+**/credentials.json
+**/service-account.json
+secrets
+
+# Blockchain & crypto. `keystore` is root-only on purpose — see the syntax note
+# at the top. The node keys this actually defends live under .local/, already
+# excluded above.
+keystore
+**/*.keystore
+**/wallet.json
+**/mnemonic.txt
+**/nodekey
+**/*nodekey
+**/jwt.hex
+**/jwtsecret
+
+# Build-context weight, with no effect on the produced binary: `geth` is a
+# stale ~75 MB root binary (already gitignored) and `git.diff` is ~6 MB of
+# inert text. Neither is read by the build.
+geth
+git.diff
+
+# NOTE: `.git` is deliberately NOT excluded, though it is ~1.5 GB of the build
+# context. `build/ci.go install` calls internal/build.LocalEnv(), which reads
+# .git/HEAD to embed the commit hash and date via -ldflags. Without .git it
+# degrades gracefully rather than failing — env.Commit comes back empty and
+# ci.go:257 simply skips those flags — so the build still succeeds and the
+# binary silently loses its version metadata. Excluding it is a real trade
+# against release-artifact provenance, not free weight, and is a decision for
+# the maintainer rather than a wiring change.

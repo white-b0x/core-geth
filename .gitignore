@@ -68,15 +68,64 @@ les/transactions.rlp
 !.env.example
 *.pem
 *.key
+*.p12
+*.pfx
+id_rsa
+id_ecdsa
+id_ed25519
 credentials.json
-keystore/
+service-account.json
+secrets/
+
+# Package-registry auth — these carry registry tokens (`_authToken`,
+# `npmAuthIdent`). A committed .npmrc can also silently weaken install-time
+# supply-chain settings.
+.npmrc
+.yarnrc
+.yarnrc.yml
+
+# Blockchain & crypto — node keys, keystores and seed material must never be
+# committed. A leaked P2P nodekey lets anyone impersonate this node's identity.
+#
+# /keystore/ is ANCHORED deliberately. Unanchored, `keystore/` matches at any
+# depth and shadows the 32 tracked source files under accounts/keystore/ —
+# nothing breaks today, because tracked files stay tracked, but a new file
+# added there by an upstream merge would be skipped by `git add` silently and
+# without an error. Do not un-anchor it, and do not add a bare `UTC--*`
+# pattern either: accounts/keystore/testdata/keystore/ holds a tracked test
+# vector with that exact name shape.
+/keystore/
+*.keystore
+wallet.json
+mnemonic.txt
+nodekey
+*nodekey
+jwt.hex
+jwtsecret
 
 # Local working directory (run scripts, planning docs, session notes, backlogs, test reports)
-local/
+# /local/ is anchored for the same reason as /keystore/ above: unanchored it
+# would match a `local/` directory at any depth in the source tree.
+/local/
 .local/
 
-# Claude / AI development tools
-.claude/
+# Claude / AI development tools — this directory is TRACKED so repo-local
+# agents, skills and rules travel with the repo. Only machine-local and
+# agent-written state is held back. Do not invert this into a blanket
+# `.claude/` ignore: an agent inside an ignored directory never reaches a
+# clone, so the whole repo-local layer would be present for its author and
+# absent for everyone else.
+#
+# Deny-list, never allow-list. `.claude/` followed by `!.claude/agents/**` is
+# inert — git cannot re-include a file whose parent directory is excluded.
+.claude/settings.local.json
+.claude/worktrees/
+.claude/agent-memory-local/
+.claude/launch.json
+.claude/scheduled_tasks.json
+.claude/**/*.local.*
+.claude/**/*-local/
+CLAUDE.local.md
 
 # Planning & internal docs
 SESSION_NOTES.md
@@ -84,3 +133,17 @@ PLANNING.md
 SCRATCH.md
 *.scratch.*
 *.draft.*
+
+# Machine-local notes. This is a deliberate SECOND, independent cover for
+# CLAUDE.local.md, which is otherwise held back by exactly one line inside the
+# .claude/ block above — the block most likely to be edited. Keep this here so
+# a change there cannot silently publish a machine-local file.
+*.local.md
+
+# IDE & OS
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
