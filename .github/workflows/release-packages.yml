@@ -120,7 +120,7 @@ jobs:
           BUILD_OS_NAME: ${{ matrix.BUILD_OS_NAME }}
 
       - name: Upload release sssets
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1 @ 2022-11-21
         with:
           draft: true
           files: core-geth*.zip*
