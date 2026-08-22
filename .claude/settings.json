@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(go test ./params/...*)",
+      "Bash(go test ./core/...*)",
+      "Bash(go test ./consensus/ethash/...*)",
+      "Bash(go test ./rlp/...*)",
+      "Bash(go test ./crypto/...*)",
+      "Bash(go vet ./...)",
+      "Bash(gofmt -l *)",
+      "Bash(make lint)",
+      "Bash(go run build/ci.go lint)",
+      "Bash(git submodule status*)"
+    ]
+  }
+}

@@ -231,6 +231,43 @@ covers `keystore/`, `*.keystore`, `nodekey`, `jwt.hex`, `jwtsecret`,
 `wallet.json`, `mnemonic.txt`, `*.key`, `*.pem` and the `.env` family; verify
 with `git check-ignore --no-index -q -- <path>` rather than by reading it.
 
+### Dependency updates — configured, and deliberately off
+
+**Decision: version updates stay OFF. Taken 2026-08-21, recorded here so it is
+settled once rather than re-decided per session.**
+
+`.github/dependabot.yml` carries a single `gomod` entry with
+`open-pull-requests-limit: 0`. That is GitHub's documented way to disable version
+updates; the entry names the ecosystem that *would* be used if they were turned
+on. There is no `cooldown:` block, and its absence is correct rather than an
+oversight — a cooldown gates nothing at a zero limit, and an inert setting reads
+as a control that is operating. Raising the limit and adding a cooldown are one
+change, not two.
+
+**The reason is this client's lifecycle, not a judgment about supply-chain risk.**
+CoreGeth is in maintenance mode and scheduled for sunset after Olympia. A standing
+weekly pull-request queue buys version currency, which is worth its cost only
+where someone triages it.
+
+**What covers the surface instead:** Go's own toolchain, which does not depend on
+this file — `go list -m -u all` for module retractions, `govulncheck` for known
+advisories against resolved versions. Treat a retraction as a prompt to check
+reachability and advisories, not as evidence of exposure; the common case is
+maintainer hygiene.
+
+**Security updates are a separate repository setting that this file cannot turn
+on or off, and a zero limit does not suppress them.** Measured against the GitHub
+API on 2026-08-21, both are off for this repository: `automated-security-fixes`
+returned `{"enabled":false,"paused":false}` and `vulnerability-alerts` returned
+HTTP 404.
+
+**Re-check that, do not re-read it.** This is a standing condition, not a closed
+item. The repository is quiet because of those two settings — not because of the
+limit in the config. Either can be flipped by anyone with admin access, and
+Dependabot's per-ecosystem support grows over time, so the repository can become
+outward-facing with nobody having edited `dependabot.yml`. Query the API rather
+than trusting this paragraph.
+
 ## Licensing — do not change
 
 There is **no file named `LICENSE`**, and that is correct, not an omission. The
@@ -295,3 +332,14 @@ the absence — the split is deliberate and inherited from upstream.
 Machine-specific facts — data directories, local run scripts, node identities —
 do not belong in this file, because it is public. Keep them in `CLAUDE.local.md`
 or under `.local/`, both of which `.gitignore` holds back.
+
+`.claude/settings.json` is tracked and travels to clones. It pre-approves only
+this repository's cheap, documented commands: the narrow `-run`-filtered `go
+test` invocations above, `go vet`, `gofmt -l`, `make lint`, and `git submodule
+status`.
+
+**The heavy targets are omitted deliberately.** `make all`, `make test`,
+`make test-coregeth` and `make geth` are a full client build plus consensus
+suites, and this machine runs one heavy task at a time. Leaving them unlisted
+keeps the approval prompt as the gate on starting one. Do not "complete" the list
+by adding them.
