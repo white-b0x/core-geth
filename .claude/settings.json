@@ -5,6 +5,8 @@
       "Bash(go test ./params/...*)",
       "Bash(go test ./core/...*)",
       "Bash(go test ./consensus/ethash/...*)",
+      "Bash(go test ./consensus/clique/...*)",
+      "Bash(go build ./consensus/...)",
       "Bash(go test ./rlp/...*)",
       "Bash(go test ./crypto/...*)",
       "Bash(go vet ./...)",

@@ -64,6 +64,9 @@ make test-coregeth                             # the core-geth-specific suite CI
 go test ./params/... -run TestETC -v
 go test ./core/... -run "TestGasLimit|TestForkCompliance|TestECIP1017|TestTreasury|TestOlympia" -v
 go test ./consensus/ethash/... -run "TestDifficultyETC|TestDifficultyECIP" -v
+
+# Consensus-oracle generator seam — see "Conformance-oracle contract" below:
+go test ./consensus/clique/ -count=1
 ```
 
 `build/ci.go test` accepts `-short`, `-race`, `-coverage`, `-v`, `-timeout`,
@@ -209,6 +212,145 @@ pre-commit checklist. Do not port its command list wholesale.
 `ethereumclassic/core-geth`, the repository pull requests are actually sent to,
 has **no** `AGENTS.md`, so nothing collides in that direction.
 
+## Conformance-oracle contract
+
+A downstream conformance-test suite uses this repository as a **conformance
+oracle** — it generates consensus fixtures by running this client's real engine,
+then scores those fixtures against deliberately wrong builds. That role imposes
+five requirements that the generic repo-wiring standard does not cover. Everything below was
+measured in this clone on 2026-08-25; re-measure rather than trusting a figure.
+
+### 1. Which branch is the oracle
+
+**The `upstream` branch is the oracle. `main` is the ETC overlay and is never
+one.**
+
+| ref | is | measured 2026-08-25 |
+|---|---|---|
+| `main` | this fork's ETC overlay | 72 ahead, 0 behind `upstream` |
+| `upstream` (local) | pegged to `ethereumclassic/core-geth` `master` | `4185df450`, 0/0 against both `upstream/master` and `origin/upstream` |
+| `geth/master` | `ethereum/go-ethereum` | **shallow in this clone — see below** |
+
+The peg is exact in both directions, so the convention already holds here and
+needs no repair. Verify before generating:
+
+```bash
+git rev-list --left-right --count upstream/master...upstream   # must be 0	0
+```
+
+**`upstream` is ETC's own client master, which is itself an overlay of
+go-ethereum.** That is sufficient for an *ETC* rule, and it is **not** sufficient
+for a rule this client merely inherits from upstream Ethereum — Clique being the
+live example. For those, `upstream` is not an independent reference and a
+byte-identity proof against real go-ethereum is still owed.
+
+**Do not use the `geth` remote for that proof.** It is a shallow fetch:
+
+```bash
+cat .git/shallow                      # 62ac0e05b, a grafted root
+git rev-list --count geth/master      # 523, against upstream's 19481
+git merge-base upstream geth/master   # exit 1 — NO merge base exists
+```
+
+File-content diffs against `geth/master` are still valid; anything requiring
+history — merge-base, ancestry, "which go-ethereum commit did this sync from" —
+silently returns a wrong or empty answer. Use a full-history `ethereum/go-ethereum`
+clone instead, and confirm it is full (`.git/shallow` absent) and clean before
+reading it. This machine's copy and the register recording which reference clones
+track upstream and which are deliberately frozen are named in `CLAUDE.local.md`;
+they are machine-local and do not belong in this file.
+
+### 2. The generator seam
+
+A fixture generator is a `_test.go` file placed **inside** the consensus package,
+which is what gives it the unexported identifiers a generator must not
+reimplement.
+
+```bash
+ORACLE_SEAM_OUT=/path/out.json \
+  go test ./consensus/clique/ -run TestGenerateOracleSeamProof -count=1 -v
+```
+
+Proven by execution on 2026-08-25, not by description. A throwaway generator in
+`package clique` reached `extraVanity`, `extraSeal`, `nonceAuthVote`,
+`nonceDropVote`, `diffInTurn`, `diffNoTurn` and `errRecentlySigned`, drove the
+unexported `(*Clique).snapshot()` and `ecrecover()` against a real
+`core.NewBlockChain`, round-tripped a seal through `SealHash` back to the signing
+address, and wrote JSON to the env-given path.
+
+The same seam exists for the other consensus packages — `consensus/ethash/` for
+ETChash and the ETC difficulty rules.
+
+### 3. The clean-clone invariant
+
+**The generator file is added, run, and removed, and the clone ends at zero
+modified and zero untracked.** A dirty oracle clone silently poisons every later
+read of it. Keep the generator's source in the consuming suite's own tooling
+directory so the run is reproducible without this clone ever holding it. Verify by effect
+after every run:
+
+```bash
+git status --porcelain | wc -l        # must be 0
+```
+
+### 4. Measured cost of one wrong-build cycle
+
+Go on this machine, warm build cache:
+
+| step | measured |
+|---|---|
+| `go build ./consensus/clique/` | ~0.2 s |
+| `go test ./consensus/clique/ -count=1` | ~1.0 s |
+| full patch → build → test → revert | **~1.3 s** |
+
+A six-defect wrong-build matrix is therefore seconds, not an afternoon, and needs
+no resource budgeting under `rules/resource-management.md`. This is a
+package-scoped figure and says nothing about `make test` or `make all`, which are
+a full client build plus consensus suites — see the warning in `CLAUDE.md`.
+
+**Source-changed plus compiles is necessary and NOT sufficient.** The handoff
+this section implements requires both checks, and on 2026-08-25 a patch passed
+both and was still behaviorally inert: swapping `header.GasLimit` and
+`header.GasUsed` in `encodeSigHeader` changed one line, compiled, and moved
+nothing, because both fields are zero in `TestSealHash`'s vector. It produced a
+clean pass indistinguishable from a coverage gap. **Add a third check: the
+mutation must be reachable and distinguishing for the inputs the suite actually
+uses**, and pair every NOT-CAUGHT with a known-CAUGHT control before reporting it.
+Dropping `header.MixDigest` from the same list changes the RLP list length, so it
+moves the hash even with all-zero fields, and it correctly fails `TestSealHash`.
+
+**Measured coverage gap, with that control in place:** mutating `diffInTurn` from
+2 to 3 changed source, compiled, and **passed** `go test ./consensus/clique/`.
+Every reference to `diffInTurn` in the package's tests is the constant itself
+(`clique_test.go:66`, `clique_test.go:84`, `snapshot_test.go:449`), so subject and
+assertion move together. **This client's own clique tests are not a safety net for
+that rule** — which is the case for the external fixtures, not an argument against
+them.
+
+### 5. Independence
+
+**Two clients sharing a root commit are one opinion, not two.**
+
+| property | value |
+|---|---|
+| first-parent root commit | `5db3335dc` (2013-12-26, "Initial commit") — **go-ethereum's own** |
+| module identity | `module github.com/ethereum/go-ethereum` — unchanged from upstream |
+
+```bash
+git rev-list --first-parent --max-parents=0 HEAD
+head -1 go.mod
+```
+
+`git rev-list --max-parents=0 HEAD` reports **six** roots here, from side branches
+merged in over the years; the `--first-parent` form above is the one that answers
+lineage. Neither the directory name nor `go.mod` reveals that this is an ETC
+client, which is exactly why the shared root gets counted twice.
+
+**Already known to share `5db3335dc`:** `ethereumclassic/core-geth`,
+`etclabscore/core-geth`, `multi-geth` and `ethereumproject/go-ethereum`. Treat any
+agreement among them as **one** data point. `besu` and `nethermind` are genuinely
+independent implementations.
+
 ## Code style
 
 - Standard Go formatting: `gofmt` and `goimports`. `goimports` is enforced by
@@ -335,8 +477,10 @@ or under `.local/`, both of which `.gitignore` holds back.
 
 `.claude/settings.json` is tracked and travels to clones. It pre-approves only
 this repository's cheap, documented commands: the narrow `-run`-filtered `go
-test` invocations above, `go vet`, `gofmt -l`, `make lint`, and `git submodule
-status`.
+test` invocations above, the `consensus/clique` package test and
+`go build ./consensus/...` that the oracle contract's generator seam and
+wrong-build cycle need (measured ~1.0 s and ~0.2 s), `go vet`, `gofmt -l`,
+`make lint`, and `git submodule status`.
 
 **The heavy targets are omitted deliberately.** `make all`, `make test`,
 `make test-coregeth` and `make geth` are a full client build plus consensus
