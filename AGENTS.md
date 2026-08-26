@@ -95,7 +95,7 @@ carries `SA1019` deprecation suppressions that only make sense because
 
 ### Generated code
 
-31 `gen_*.go` files are generated, and 25 files carry `go:generate` directives.
+31 `gen_*.go` files are generated, and 24 files carry `go:generate` directives.
 CI enforces that they are current in `.github/workflows/go-generate-check.yml`,
 which runs `make devtools` then `go generate` over `go list ./...` (excluding
 `trezor`) and fails if the tree changes. Regenerate with `go generate ./...`

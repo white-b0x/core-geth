@@ -112,15 +112,23 @@ are required. Never hand-edit a `gen_*.go`.
 
 ## Branching
 
-**Inferred from history, not stated by the maintainer — confirm before relying
-on it.** The repository carries ~29 topic branches using conventional prefixes
-(`security/`, `test/`, `docs/`, `chore/`, `fix/`, `rlp/`) with kebab-case
-descriptions, and `main` is the default branch that release tags and upstream
-pull requests are cut from.
+**Commit directly to `main`.** Maintainer decision, 2026-08-11, recorded so it
+is settled once rather than re-decided per commit. This is a solo-maintained
+repository: nothing else pulls `main`, and no CI, deploy or release triggers
+from it. Do not open a topic branch for routine work on the assumption that a
+fork of a consensus-critical client must always branch — that is ceremony here,
+not protection.
 
-Work on a topic branch; keep `main` releasable. Pushing is a separate decision
-from committing and should be confirmed explicitly — this repository is public
-and its pull requests go to a consensus-critical upstream.
+The repository does carry topic branches using conventional prefixes
+(`security/`, `test/`, `docs/`, `chore/`, `fix/`, `rlp/`) with kebab-case
+descriptions. Use one when you actually want review before something lands, or
+when `main` must stay releasable through a long-running change. `main` is the
+default branch that release tags and upstream pull requests are cut from.
+
+**Pushing is unaffected and remains a separate decision from committing.** It
+must be confirmed explicitly, because this repository is public and pull
+requests from it go to a consensus-critical upstream. The policy above governs
+where commits land, not whether they leave the machine.
 
 **Known merge collision on `AGENTS.md`.** `ethereum/go-ethereum` ships its own
 root `AGENTS.md` (commit `406a852ec`, 2026-02-25), already present in this clone
@@ -128,6 +136,52 @@ via the `geth` remote, so a merge from `geth/master` will conflict on it.
 **This fork's `AGENTS.md` wins** — upstream's describes go-ethereum and names
 commands this fork does not have, such as `go run ./build/ci.go check_generate`.
 `ethereumclassic/core-geth`, the actual PR target, has no `AGENTS.md`.
+
+## Conformance-oracle contract
+
+A downstream conformance-test suite uses this repository as a **conformance
+oracle**: it generates consensus fixtures by running this client's real engine,
+then scores them against deliberately wrong builds. Five requirements follow.
+Every figure below was measured in a clone on 2026-08-25 — re-measure rather
+than trusting one.
+
+1. **`upstream` is the oracle branch; `main` is the ETC overlay and never is.**
+   Verify the peg before generating: `git rev-list --left-right --count
+   upstream/master...upstream` must print `0	0`. `upstream` is ETC's own client
+   master, which is itself an overlay of go-ethereum — enough for an *ETC* rule,
+   not for a rule merely inherited from upstream Ethereum (Clique is the live
+   example), which still owes a byte-identity proof against real go-ethereum.
+2. **Do not use the `geth` remote for that proof — it is a shallow fetch.**
+   `git merge-base upstream geth/master` exits 1; there is no merge base. File
+   content diffs against it are valid; anything needing history returns a
+   confidently wrong or empty answer. Use a full-history `ethereum/go-ethereum`
+   clone and confirm it is not shallow first.
+3. **The generator seam is a `_test.go` file placed inside the consensus
+   package**, which is what gives it the unexported identifiers a generator must
+   not reimplement — proven by execution against `consensus/clique/`, and the
+   same seam exists for `consensus/ethash/`. The generator is added, run, and
+   removed: **the clone ends at zero modified and zero untracked**
+   (`git status --porcelain | wc -l` must be 0). A dirty oracle clone silently
+   poisons every later read of it, so keep the generator's source in the
+   consuming suite's own tooling directory.
+4. **Source-changed plus compiles is necessary and NOT sufficient** when scoring
+   a wrong build. A patch that changed one line and compiled was still
+   behaviorally inert, producing a clean pass indistinguishable from a coverage
+   gap. Add a third check — the mutation must be reachable and distinguishing
+   for the inputs the suite actually uses — and pair every NOT-CAUGHT with a
+   known-CAUGHT control before reporting it. One full patch → build → test →
+   revert cycle on `consensus/clique/` measured ~1.3 s, so a wrong-build matrix
+   is seconds; that says nothing about `make test` or `make all`.
+5. **Two clients sharing a root commit are one opinion, not two.** This fork's
+   first-parent root is `5db3335dc`, go-ethereum's own, and `go.mod` still reads
+   `module github.com/ethereum/go-ethereum` — so neither the directory name nor
+   the module path reveals this is an ETC client. `ethereumclassic/core-geth`,
+   `etclabscore/core-geth`, `multi-geth` and `ethereumproject/go-ethereum` all
+   share it; treat agreement among them as **one** data point. `besu` and
+   `nethermind` are genuinely independent.
+
+Reference-clone locations are machine-local and are deliberately not in this
+file, `AGENTS.md` or `CLAUDE.md`.
 
 ## Code style
 
@@ -147,6 +201,36 @@ six CVEs plus a GraphQL depth DoS. Read it before touching `crypto/`, `p2p/`,
 Never commit node keys, keystores, mnemonics or JWT secrets. `.gitignore` and
 `.dockerignore` both cover them; verify with
 `git check-ignore --no-index -q -- <path>` rather than by reading either file.
+
+### Dependency updates — configured, and deliberately off
+
+**Version updates stay OFF. Decision taken 2026-08-21**, recorded so it is
+settled once rather than re-decided per session.
+
+`.github/dependabot.yml` carries a single `gomod` entry with
+`open-pull-requests-limit: 0` — GitHub's documented way to disable version
+updates. The entry names the ecosystem that *would* be used if they were turned
+on. There is no `cooldown:` block, and that absence is correct rather than an
+oversight: a cooldown gates nothing at a zero limit, and an inert setting reads
+as a control that is operating. Raising the limit and adding a cooldown are one
+change, not two.
+
+**The reason is this client's lifecycle, not a judgment about supply-chain
+risk.** CoreGeth is in maintenance mode and scheduled for sunset after Olympia.
+A standing weekly pull-request queue buys version currency, which is worth its
+cost only where someone triages it.
+
+**What covers the surface instead** is Go's own toolchain, which does not depend
+on that file: `go list -m -u all` for module retractions, `govulncheck` for
+known advisories against resolved versions. A retraction is a prompt to check
+reachability and advisories, not evidence of exposure — the common case is
+maintainer hygiene.
+
+**Security updates are a separate repository setting that this file cannot turn
+on or off, and a zero limit does not suppress them.** Measured against the
+GitHub API on 2026-08-21, both were off for this repository. **Re-check that,
+do not re-read it:** anyone with admin access can flip either, so the repository
+can become outward-facing with nobody having edited `dependabot.yml`.
 
 ## Deliberately present — do not tidy
 
