@@ -391,11 +391,31 @@ CoreGeth is in maintenance mode and scheduled for sunset after Olympia. A standi
 weekly pull-request queue buys version currency, which is worth its cost only
 where someone triages it.
 
-**What covers the surface instead:** Go's own toolchain, which does not depend on
-this file — `go list -m -u all` for module retractions, `govulncheck` for known
-advisories against resolved versions. Treat a retraction as a prompt to check
-reachability and advisories, not as evidence of exposure; the common case is
-maintainer hygiene.
+**What covers the surface instead — and it is run by hand, not on a schedule.**
+Go's own toolchain, which does not depend on this file: `go list -m -u all` for
+module retractions, `govulncheck` for known advisories against resolved versions.
+Treat a retraction as a prompt to check reachability and advisories, not as
+evidence of exposure; the common case is maintainer hygiene.
+
+**Naming those two tools is not the same as running them, and for months it was
+not.** `govulncheck` was first actually executed against this repository on
+2026-08-25, having been credited as the coverage since 2026-08-21 while being
+absent from every reachable path. **Nothing in this repository schedules either
+tool**, so the sentence above describes an instrument, not a control that is
+operating — the same distinction the `cooldown:` note above draws, and the reason
+that note exists. State what runs; do not let a tool's existence read as coverage.
+
+**How to actually run them**, from the repository root:
+
+```bash
+go list -m -u all | grep -i retract        # module retractions; pull-based, surfaces nothing unasked
+govulncheck ./...                          # source mode: module + stdlib reachability
+govulncheck -mode binary build/bin/geth    # binary mode: what you actually run
+```
+
+Exit `3` means vulnerabilities found, `0` clean, `127` the tool is absent. Treat
+any other code as did-not-run, never as clean — a scanner that is missing or stale
+reports the same silence as a healthy one.
 
 **Security updates are a separate repository setting that this file cannot turn
 on or off, and a zero limit does not suppress them.** Measured against the GitHub

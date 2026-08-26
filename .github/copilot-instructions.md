@@ -220,11 +220,29 @@ risk.** CoreGeth is in maintenance mode and scheduled for sunset after Olympia.
 A standing weekly pull-request queue buys version currency, which is worth its
 cost only where someone triages it.
 
-**What covers the surface instead** is Go's own toolchain, which does not depend
-on that file: `go list -m -u all` for module retractions, `govulncheck` for
-known advisories against resolved versions. A retraction is a prompt to check
-reachability and advisories, not evidence of exposure — the common case is
-maintainer hygiene.
+**What covers the surface instead — run by hand, not on a schedule.** Go's own
+toolchain, which does not depend on that file: `go list -m -u all` for module
+retractions, `govulncheck` for known advisories against resolved versions. A
+retraction is a prompt to check reachability and advisories, not evidence of
+exposure — the common case is maintainer hygiene.
+
+**Naming those tools is not the same as running them, and for months it was not.**
+`govulncheck` was first actually executed against this repository on 2026-08-25,
+having been credited as the coverage since 2026-08-21 while absent from every
+reachable path. **Nothing here schedules either tool.** The sentence above names
+an instrument, not a control that is operating — the same distinction the absent
+`cooldown:` block draws. State what runs; do not let a tool's existence read as
+coverage.
+
+```bash
+go list -m -u all | grep -i retract        # module retractions; surfaces nothing unasked
+govulncheck ./...                          # source mode: module + stdlib reachability
+govulncheck -mode binary build/bin/geth    # binary mode: what you actually run
+```
+
+Exit `3` = vulnerabilities found, `0` = clean, `127` = tool absent. Anything else
+is did-not-run, never clean — a missing or stale scanner is silent exactly like a
+healthy one.
 
 **Security updates are a separate repository setting that this file cannot turn
 on or off, and a zero limit does not suppress them.** Measured against the
