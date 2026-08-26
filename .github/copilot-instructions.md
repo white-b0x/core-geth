@@ -310,6 +310,14 @@ attacker-supplied input reaches the parser. Removing it breaks release signing; 
 build tag cannot help, since the release path is what needs it. **Re-check if
 anything here ever verifies third-party signatures or parses user-supplied keys.**
 
+**The scanner is verified before the set is compared.** Three `govulncheck`
+binaries exist on this machine, and an older one reports a **smaller** set — which
+would surface as "adjudicated advisories GONE", a confident wrong answer pointing
+at this repository instead of at `PATH`. A shadowed or mismatched scanner fails as
+did-not-run, never as set-changed. Parse its version anchored on the `Scanner:`
+line: `govulncheck -version` prints the **Go toolchain** version first, so a bare
+`\d+\.\d+\.\d+` match returns the wrong number.
+
 **The rule for both sets: compare the exact set of advisory IDs; any difference in
 either direction is a finding.** A new ID is unadjudicated. A *missing* ID is also a
 finding — the adjudication went stale, or the artifact is not the one adjudicated.

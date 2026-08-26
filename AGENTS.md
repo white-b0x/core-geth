@@ -485,6 +485,17 @@ for one machine. Its contract: exit `0` set matches, `1` set changed, `2`
 did-not-run. It was calibrated against a deliberately wrong expected set before
 being trusted.
 
+**It verifies the scanner before it compares the set**, because an exact-set gate
+is only as good as the tool producing the set. Three `govulncheck` binaries exist
+on this machine — the pinned one on `PATH` and two stranded older copies — and an
+older scanner reports a **smaller** set, which would surface as "adjudicated
+advisories GONE": a confident wrong answer pointing at this repository instead of
+at `PATH`. So a shadowed or mismatched scanner fails as **did-not-run**, never as
+set-changed. The pinned version is read from the machine's own pin file rather
+than restated here, and the version is parsed anchored on the `Scanner:` line —
+`govulncheck -version` prints the **Go toolchain** version first, so a bare
+`\d+\.\d+\.\d+` match returns the wrong number and would move on every Go bump.
+
 ## Licensing — do not change
 
 There is **no file named `LICENSE`**, and that is correct, not an omission. The
