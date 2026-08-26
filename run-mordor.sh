@@ -7,12 +7,11 @@ exec geth \
   --identity "Mordor Testnet" \
   --datadir=/media/dev/2tb/data/blockchain/core-geth/mordor \
   --http \
-  --http.addr=0.0.0.0 \
+  --http.addr=127.0.0.1 \
   --http.port=8545 \
-  --http.corsdomain="*" \
-  --http.api=eth,net,web3,debug,txpool \
+  --http.api=eth,net,web3,txpool \
   --ws \
-  --ws.addr=0.0.0.0 \
+  --ws.addr=127.0.0.1 \
   --ws.port=8546 \
   --port=30303 \
   --cache=1024 \
