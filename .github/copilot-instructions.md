@@ -264,6 +264,40 @@ These look like clutter and are not. Do not delete, move, consolidate or
 - **`accounts/keystore/`** — this is source code and test vectors, not key
   material, despite the directory name.
 
+### Adjudicated `govulncheck` findings — reported forever, and expected
+
+**Six advisories are reported permanently and have been adjudicated. Do not
+re-adjudicate them, and do not try to close them with a version bump — neither
+set can be.**
+
+**Binary mode, five `github.com/ethereum/go-ethereum` advisories** — `GO-2026-4314`,
+`GO-2026-4315`, `GO-2026-4507`, `GO-2026-4508`, `GO-2026-4511`. Already backported
+into this fork, each traceable to a core-geth commit ancestral to the build
+revision. They recur **structurally**: the fork keeps go-ethereum's module path, so
+its pseudo-version sorts below upstream's fixed tags, and `govulncheck` matches
+symbol *names* while a backport adds guards inside the same function. Note the RLP
+fix is **not** in `rlp/` — it is `countValuesExceedsLimit` in
+`eth/protocols/{eth,snap}/msgvalidate.go`, so a grep scoped to `rlp/` reads as
+absence.
+
+**Source mode, `GO-2026-5932`** — `golang.org/x/crypto/openpgp`, `Fixed in: N/A`,
+unmaintained by design. Measured both directions: 0 openpgp packages in
+`./cmd/geth`, 6 in `./internal/build`. **Not in the shipped binary** — but not dead
+either: `.github/workflows/release-packages.yml` → `build/archive-signing.sh` →
+`ci.go archive -signer` → `build.PGPSignFile`, so it runs on every signed release.
+**Accepted** because the only thing openpgp parses is the signing key from a
+CI-secret environment variable, signing this project's own archive — no
+attacker-supplied input reaches the parser. Removing it breaks release signing; a
+build tag cannot help, since the release path is what needs it. **Re-check if
+anything here ever verifies third-party signatures or parses user-supplied keys.**
+
+**The rule for both sets: compare the exact set of advisory IDs; any difference in
+either direction is a finding.** A new ID is unadjudicated. A *missing* ID is also a
+finding — the adjudication went stale, or the artifact is not the one adjudicated.
+**Never suppress by module or category**; that hides the next real advisory behind
+the known ones. Since findings are expected, a `govulncheck` exit of `0` is itself a
+change, not a pass, and any exit other than `3` is did-not-run, never clean.
+
 ## Licensing — do not change
 
 There is **no `LICENSE` file**, and that is correct. The project uses

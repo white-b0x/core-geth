@@ -430,6 +430,61 @@ Dependabot's per-ecosystem support grows over time, so the repository can become
 outward-facing with nobody having edited `dependabot.yml`. Query the API rather
 than trusting this paragraph.
 
+### Adjudicated `govulncheck` findings — reported forever, and that is expected
+
+**Six advisories are reported permanently and have been adjudicated. Do not
+re-adjudicate them from scratch, and do not try to close them with a version
+bump — neither set can be.** Evidence per advisory is in the response document
+this repository keeps outside the tracked tree; the disposition and the rule are
+here because this file is what the next agent reads.
+
+**Binary mode — five `github.com/ethereum/go-ethereum` advisories:** `GO-2026-4314`,
+`GO-2026-4315`, `GO-2026-4507`, `GO-2026-4508`, `GO-2026-4511`. All five are already
+backported into this fork, each traceable to a core-geth commit ancestral to the
+build revision. They recur **structurally**: the fork keeps go-ethereum's module
+path, so its pseudo-version always sorts below upstream's fixed tags, and
+`govulncheck` matches symbol *names* while a backport adds guards inside the same
+function. Verified in this tree — the ECIES point checks in `crypto/ecies/ecies.go`,
+the field-boundary check in `crypto/secp256k1/curve.go`, and `countValuesExceedsLimit`
+in `eth/protocols/{eth,snap}/msgvalidate.go`. **The RLP fix is not in `rlp/`** — a grep
+scoped there finds nothing and reads as absence.
+
+**Source mode — `GO-2026-5932`, `golang.org/x/crypto/openpgp`, `Fixed in: N/A`.**
+Unmaintained and unsafe by design, so no version closes it. Scoped, measured both
+directions: `go list -deps ./cmd/geth | grep -c openpgp` is **0**;
+`go list -deps ./internal/build | grep -c openpgp` is **6**. It is **not in the
+shipped binary**.
+
+**It is not dead code either, and the disposition rests on why it is acceptable
+rather than on it being unused.** `.github/workflows/release-packages.yml` runs
+`build/archive-signing.sh`, which reaches `ci.go archive -signer` and
+`build.PGPSignFile`. So it executes on every signed release. **Accepted** because
+the only thing openpgp *parses* is the signing key read from a CI-secret
+environment variable, and it signs this project's own archive — no
+attacker-supplied input reaches the parser, and anyone who can set that variable
+already controls the release. Removing it would break release signing; a build tag
+cannot help, because the release path is what needs it.
+
+**Re-check condition, and this is the part that expires:** the disposition holds
+only while no externally-supplied PGP material reaches that path. If anything here
+ever verifies third-party signatures or parses user-supplied keys, it must be
+re-decided.
+
+**The rule for both sets: compare the exact set of advisory IDs, and treat any
+difference in either direction as a finding.** A new ID is an unadjudicated
+advisory. A *missing* ID is equally a finding — it means the adjudication went
+stale or the artifact is not the one that was adjudicated. **Never suppress by
+module or by category**; that hides the next real advisory behind the known ones,
+which is worse than the noise it removes. Because findings are expected here, a
+`govulncheck` exit of `0` is itself a change, not a pass — and any exit other than
+`3` is did-not-run, never clean.
+
+A checker implementing exactly that comparison lives with this repository's other
+machine-local scripts; it is deliberately not tracked, because it hard-codes paths
+for one machine. Its contract: exit `0` set matches, `1` set changed, `2`
+did-not-run. It was calibrated against a deliberately wrong expected set before
+being trusted.
+
 ## Licensing — do not change
 
 There is **no file named `LICENSE`**, and that is correct, not an omission. The
