@@ -536,13 +536,49 @@ the absence — the split is deliberate and inherited from upstream.
 
 - **`git.diff`** — a ~6 MB tracked diff artifact at the repository root.
 - **Legacy CI files** — `.travis.yml`, `circle.yml`, `appveyor.yml`,
-  `Jenkinsfile`, `oss-fuzz.sh`. Inherited from upstream; the live CI is
-  `.github/workflows/`.
+  `Jenkinsfile`, `oss-fuzz.sh`. The live CI is `.github/workflows/`. **"Inherited
+  from upstream" is provenance, not justification, and it is wrong for two of
+  them.** Measured against a full-history go-ethereum clone, 2026-08-25:
+  go-ethereum deleted `.travis.yml` (2025-06-26), `circle.yml` (2026-01-17,
+  #33616) and `appveyor.yml` (2026-05-10, #34720), so deleting those three here
+  would *converge* with it — while `ethereumclassic/core-geth`, where releases
+  land, still carries all of them. `Jenkinsfile` appears in **no** go-ethereum
+  commit ever; it is ETC's own. And `oss-fuzz.sh` is **not legacy at all** —
+  it is present in go-ethereum master today and is Google's OSS-Fuzz build
+  entry point. Do not sweep these as a group.
 - **`swarm/` and `integration/`** — near-empty holdover directories.
 - **`AUTHORS` and `.mailmap`** — upstream attribution records.
 - **`accounts/keystore/`** — 32 tracked source files and test vectors, not key
   material, despite the directory name. `.gitignore`'s `/keystore/` entry is
   anchored specifically so it does not shadow them.
+
+- **`build/checksums.txt`'s `ppa-builder` pin (Go 1.19.6) is knowingly
+  insufficient — do not "fix" it by bumping, and do not re-derive this.** The
+  file has **two** Go pins serving different paths, and conflating them inverts
+  which one matters:
+  - **`version:golang`** is read by `DownloadGo` (`internal/build/gotool.go`) for
+    `-dlgo`, which downloads a **binary** release. `.github/workflows/release-packages.yml`
+    runs `ci.go install -dlgo` for every ARM and arm64 target, so this pin is
+    **live and release-critical**. It is at 1.26.6.
+  - **`version:ppa-builder`** is read only by `downloadGoBootstrapSources`
+    (`build/ci.go`), the compiler used to build Go **from source** on the
+    Launchpad path. That path is reached only from `debsrc`, invoked only by
+    `.travis.yml` and `build/bot/ppa-build.sh` — neither of which the live CI
+    runs. It is at 1.19.6.
+
+  Per <https://go.dev/doc/install/source>, Go 1.22–1.23 require a Go 1.20
+  compiler, and *"going forward, Go 1.N will require a Go 1.M compiler, where M
+  is N-2 rounded down to an even number"* — so **Go 1.26 requires Go 1.24**.
+  1.19.6 cannot bootstrap it. **It could not bootstrap the previous 1.22.1 pin
+  either**, which needed 1.20, so this predates the 1.26.6 bump rather than being
+  caused by it.
+
+  The file's own comment anticipates exactly this: *"If it ever becomes
+  insufficient, we need to switch over to a recursive builder to jump across
+  supported versions."* That clause has fired. A single bump cannot fix it —
+  reaching 1.24 from 1.19.6 needs a chain — and the remedy is upstream's design
+  decision, not this fork's. Left as-is deliberately, on a path nothing here
+  runs.
 
 ### Environment
 

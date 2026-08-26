@@ -257,8 +257,27 @@ These look like clutter and are not. Do not delete, move, consolidate or
 
 - **`git.diff`** — a ~6 MB tracked diff artifact at the repository root.
 - **Legacy CI files** — `.travis.yml`, `circle.yml`, `appveyor.yml`,
-  `Jenkinsfile`, `oss-fuzz.sh`. Inherited from upstream; the live CI is
-  `.github/workflows/`.
+  `Jenkinsfile`, `oss-fuzz.sh`. The live CI is `.github/workflows/`. **"Inherited
+  from upstream" is provenance, not justification, and is wrong for two of
+  them.** go-ethereum deleted `.travis.yml` (2025-06-26), `circle.yml`
+  (2026-01-17) and `appveyor.yml` (2026-05-10) — but `ethereumclassic/core-geth`,
+  where releases land, still carries all of them. `Jenkinsfile` appears in **no**
+  go-ethereum commit ever; it is ETC's own. `oss-fuzz.sh` is **not legacy** — it
+  is in go-ethereum master today and is Google's OSS-Fuzz entry point. Do not
+  sweep these as a group.
+- **`build/checksums.txt`'s `ppa-builder` pin (Go 1.19.6) is knowingly
+  insufficient — do not bump it.** Two Go pins serve different paths.
+  `version:golang` feeds `DownloadGo` for `-dlgo`, a **binary** download that
+  `release-packages.yml` runs for every ARM/arm64 target — live and
+  release-critical, at 1.26.6. `version:ppa-builder` feeds
+  `downloadGoBootstrapSources`, the compiler that builds Go **from source** on
+  the Launchpad path, reached only from `debsrc` (invoked only by `.travis.yml`
+  and `build/bot/ppa-build.sh`, neither live). Go 1.26 requires a Go 1.24
+  compiler (go.dev/doc/install/source: 1.N needs 1.M where M = N-2 rounded down
+  to even), so 1.19.6 cannot bootstrap it — and could not bootstrap the previous
+  1.22.1 pin either, which needed 1.20. The file's own comment anticipates this:
+  the remedy is a recursive bootstrap chain, which is upstream's design decision.
+  Left as-is on a path nothing here runs.
 - **`swarm/` and `integration/`** — near-empty holdover directories.
 - **`AUTHORS` and `.mailmap`** — upstream attribution records.
 - **`accounts/keystore/`** — this is source code and test vectors, not key
